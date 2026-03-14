@@ -18,6 +18,7 @@ const Layout = ({ children }) => {
     const navItems = [
         { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
         { name: 'New Course', path: '/new-course', icon: BookOpen },
+        { name: 'Enrolled Courses', path: '/enrolled-courses', icon: BookOpen },
         { name: 'Community', path: '/community', icon: Users },
         { name: 'Jobs', path: '/jobs', icon: Briefcase },
         { name: 'Profile', path: '/profile', icon: User },

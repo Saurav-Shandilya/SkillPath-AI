@@ -214,6 +214,37 @@ export const enrollInCourse = async (req, res) => {
     }
 };
 
+export const dropCourse = async (req, res) => {
+    const courseId = req.params.id;
+
+    try {
+        console.log(`User ${req.user._id} attempting to drop Course ${courseId}`);
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return res.status(404).json({ message: 'Course not found' });
+        }
+
+        // Only allow the owner to drop it
+        if (course.userId && course.userId.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'Unauthorized to drop this course' });
+        }
+
+        // Delete the course document itself
+        await Course.findByIdAndDelete(courseId);
+
+        // Pull it from the user's enrolled array
+        await User.findByIdAndUpdate(req.user._id, {
+            $pull: { enrolledCourses: { courseId: courseId } }
+        });
+
+        console.log(`Successfully dropped and deleted Course ${courseId}`);
+        res.json({ message: 'Course dropped successfully' });
+    } catch (error) {
+        console.error("Drop Course Error:", error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 export const updateModuleStatus = async (req, res) => {
     const { courseId, moduleIndex, status } = req.body; // status: pending, in-progress, completed
 
