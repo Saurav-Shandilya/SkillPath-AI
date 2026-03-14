@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { LogOut, User, BookOpen, LayoutDashboard, Menu, X } from 'lucide-react';
+import { LogOut, User, BookOpen, LayoutDashboard, Menu, X, Users, Briefcase } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import AIMentor from './AIMentor';
 
@@ -18,6 +18,8 @@ const Layout = ({ children }) => {
     const navItems = [
         { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
         { name: 'New Course', path: '/new-course', icon: BookOpen },
+        { name: 'Community', path: '/community', icon: Users },
+        { name: 'Jobs', path: '/jobs', icon: Briefcase },
         { name: 'Profile', path: '/profile', icon: User },
     ];
 
