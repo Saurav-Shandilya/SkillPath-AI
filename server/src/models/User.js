@@ -34,7 +34,13 @@ const userSchema = new mongoose.Schema({
     lastLogin: {
         type: Date,
         default: Date.now
-    }
+    },
+    badges: [{
+        name: String,
+        icon: String,
+        courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
+        earnedAt: { type: Date, default: Date.now }
+    }]
 }, { timestamps: true });
 
 // Hash password before saving

@@ -1,59 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Briefcase, MapPin, DollarSign, Clock, Building, ArrowRight, Bookmark, CheckCircle, Search, Filter } from 'lucide-react';
+import { Briefcase, MapPin, DollarSign, Clock, Building, ArrowRight, Bookmark, Search, Filter, Star } from 'lucide-react';
+import axios from 'axios';
 import Layout from '../components/Layout';
 
 const Jobs = () => {
     const [activeFilter, setActiveFilter] = useState('all');
+    const [jobs, setJobs] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const jobs = [
-        {
-            id: 1,
-            company: "TechFlow Labs",
-            role: "Frontend Engineering Intern",
-            type: "Internship",
-            location: "Remote (Global)",
-            salary: "$2,000 - $3,500 / month",
-            posted: "2 days ago",
-            reqs: ["React", "Tailwind CSS", "JavaScript ES6+"],
-            isHot: true
-        },
-        {
-            id: 2,
-            company: "DataSphere Inc.",
-            role: "Junior Data Analyst",
-            type: "Full-time",
-            location: "New York, NY (Hybrid)",
-            salary: "$65,000 - $80,000 / year",
-            posted: "5 hours ago",
-            reqs: ["Python", "SQL", "Tableau/PowerBI"],
-            isHot: false
-        },
-        {
-            id: 3,
-            company: "CloudNative",
-            role: "Backend Developer",
-            type: "Full-time",
-            location: "London, UK",
-            salary: "£45,000 - £60,000 / year",
-            posted: "1 day ago",
-            reqs: ["Node.js", "Express", "MongoDB", "AWS"],
-            isHot: true
-        },
-        {
-            id: 4,
-            company: "StartupZ",
-            role: "UI/UX Design Intern",
-            type: "Internship",
-            location: "San Francisco, CA (On-site)",
-            salary: "$30 / hour",
-            posted: "3 days ago",
-            reqs: ["Figma", "User Research", "Prototyping"],
-            isHot: false
-        }
-    ];
+    useEffect(() => {
+        const fetchJobs = async () => {
+            try {
+                const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+                const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+                if (!userInfo || !userInfo.token) return;
+
+                const { data } = await axios.get(`${API_BASE}/jobs`, {
+                    headers: { Authorization: `Bearer ${userInfo.token}` }
+                });
+                setJobs(data);
+            } catch (err) {
+                console.error("Error fetching jobs:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchJobs();
+    }, []);
 
     const filteredJobs = activeFilter === 'all' ? jobs : jobs.filter(j => j.type.toLowerCase() === activeFilter);
+
+    if (loading) return <Layout><div className="h-full flex items-center justify-center text-gray-400">Loading jobs...</div></Layout>;
 
     return (
         <Layout>
@@ -130,7 +108,14 @@ const Jobs = () => {
                                         {job.company.charAt(0)}
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold group-hover:text-purple-400 transition-colors">{job.role}</h3>
+                                        <h3 className="text-xl font-bold group-hover:text-purple-400 transition-colors flex items-center gap-2">
+                                            {job.role}
+                                            {job.matchPercentage >= 75 && (
+                                                <span title="Highly Recommended" className="text-yellow-400 flex items-center pointer-events-none">
+                                                    <Star className="w-4 h-4 fill-yellow-400" />
+                                                </span>
+                                            )}
+                                        </h3>
                                         <div className="flex items-center gap-2 text-sm text-gray-400 mt-1">
                                             <Building className="w-3.5 h-3.5" />
                                             {job.company}
@@ -170,11 +155,27 @@ const Jobs = () => {
                                         </span>
                                     ))}
                                 </div>
+                                {job.matchPercentage !== undefined && (
+                                    <div className="mt-5 bg-white/5 p-3 rounded-xl border border-white/5">
+                                        <div className="flex justify-between items-center mb-1">
+                                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wide">Skill Match</span>
+                                            <span className={`text-xs font-bold ${job.matchPercentage >= 75 ? 'text-green-400' : job.matchPercentage >= 40 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                                                {job.matchPercentage}%
+                                            </span>
+                                        </div>
+                                        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                                            <div 
+                                                className={`h-full rounded-full transition-all duration-1000 ${job.matchPercentage >= 75 ? 'bg-green-500' : job.matchPercentage >= 40 ? 'bg-yellow-500' : 'bg-gray-500'}`} 
+                                                style={{ width: `${job.matchPercentage}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Footer / CTA */}
                             <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-auto">
-                                <span className="text-xs text-gray-500">Posted {job.posted}</span>
+                                <span className="text-xs text-gray-500">Posted {new Date(job.createdAt || Date.now()).toLocaleDateString()}</span>
                                 <button className="text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 px-5 py-2.5 rounded-xl transition-colors flex items-center gap-2 group/btn">
                                     Apply Now <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                                 </button>

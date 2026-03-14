@@ -58,6 +58,22 @@ const CourseView = () => {
     if (!course) return <Layout><div className="p-10 text-center">Course not found.</div></Layout>;
 
     const totalHours = course.duration * course.dailyTime;
+    
+    // Calculate global grade
+    const completedQuizzes = course.chapterQuizzes?.filter(q => q.completed) || [];
+    const averageScore = completedQuizzes.length > 0
+        ? Math.round(completedQuizzes.reduce((sum, q) => sum + q.score, 0) / completedQuizzes.length)
+        : null;
+
+    let gradeString = "Not Rated";
+    let gradeColor = "text-gray-400";
+    if (averageScore !== null) {
+        if (averageScore >= 90) { gradeString = "A+"; gradeColor = "text-green-400"; }
+        else if (averageScore >= 80) { gradeString = "A"; gradeColor = "text-green-500"; }
+        else if (averageScore >= 70) { gradeString = "B"; gradeColor = "text-yellow-400"; }
+        else if (averageScore >= 60) { gradeString = "C"; gradeColor = "text-yellow-600"; }
+        else { gradeString = "Incomplete"; gradeColor = "text-red-500"; }
+    }
 
     return (
         <Layout>
@@ -80,6 +96,10 @@ const CourseView = () => {
                             <div className="flex items-center gap-2 text-gray-400 bg-white/5 px-4 py-2 rounded-full border border-white/5 w-fit">
                                 <Clock className="w-4 h-4 text-purple-400" /> {totalHours} Total Hours
                             </div>
+                            <div className="flex items-center gap-2 text-gray-400 bg-white/5 px-4 py-2 rounded-full border border-white/5 w-fit">
+                                <span className="text-xs uppercase font-bold tracking-widest text-gray-500">Excellence Mark:</span> 
+                                <span className={`font-bold text-lg ${gradeColor}`}>{gradeString} {averageScore ? `(${averageScore}%)` : ''}</span>
+                            </div>
                         </div>
                     </motion.div>
 
@@ -93,14 +113,34 @@ const CourseView = () => {
                     </div>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-12">
                     {course.structure && course.structure.length > 0 ? (
-                        course.structure.map((module, i) => (
-                            <motion.div
-                                key={i}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: i * 0.1 }}
+                        // Group modules by stage
+                        Object.entries(
+                            course.structure.reduce((acc, module, index) => {
+                                const stageName = module.stage || 'Course Curriculum';
+                                if (!acc[stageName]) acc[stageName] = [];
+                                acc[stageName].push({ ...module, originalIndex: index });
+                                return acc;
+                            }, {})
+                        ).map(([stageName, modules], stageIdx) => (
+                            <div key={stageIdx} className="space-y-6">
+                                {/* Stage Header */}
+                                <div className="flex items-center gap-4">
+                                    <div className="h-px bg-white/10 flex-1"></div>
+                                    <h2 className="text-xl md:text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+                                        {stageName}
+                                    </h2>
+                                    <div className="h-px bg-white/10 flex-1"></div>
+                                </div>
+
+                                {/* Modules in Stage */}
+                                {modules.map((module) => (
+                                    <motion.div
+                                        key={module.originalIndex}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: module.originalIndex * 0.1 }}
                                 className={`glass-card p-8 group relative overflow-hidden transition-all ${module.status === 'completed' ? 'opacity-60 grayscale-[0.5]' : ''}`}
                             >
                                 <div className={`absolute top-0 left-0 w-1 h-full transition-transform origin-top ${module.status === 'completed' ? 'bg-green-500 scale-y-100' : 'bg-blue-500 transform scale-y-0 group-hover:scale-y-100'}`}></div>
@@ -120,6 +160,18 @@ const CourseView = () => {
                                     <div className="flex-1">
                                         <h3 className="text-xl md:text-2xl mb-2 font-medium group-hover:text-blue-400 transition-colors">{module.topic}</h3>
                                         <p className="text-gray-400 text-sm md:text-base mb-4 leading-relaxed">{module.description}</p>
+                                        
+                                        {/* Subtopics */}
+                                        {module.subtopics && module.subtopics.length > 0 && (
+                                            <div className="flex flex-wrap gap-2 mb-4">
+                                                {module.subtopics.map((sub, idx) => (
+                                                    <span key={idx} className="bg-white/5 border border-white/5 text-gray-300 px-2.5 py-1 rounded-md text-xs">
+                                                        {sub}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+
                                         <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                                             <span className="flex items-center gap-1 bg-white/5 px-2 py-1 rounded-md"><Clock className="w-4 h-4" /> {module.estimatedTime}</span>
                                             <span className={`hidden sm:inline-flex px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-tight ${module.status === 'completed' ? 'bg-green-500/20 text-green-500' :
@@ -131,14 +183,14 @@ const CourseView = () => {
                                         {module.status !== 'completed' && (
                                             <>
                                                 <button
-                                                    onClick={() => navigate(`/course/${courseId}/module/${i}`)}
+                                                    onClick={() => navigate(`/course/${courseId}/module/${module.originalIndex}`)}
                                                     className={`flex-1 sm:w-12 sm:h-12 py-3 sm:py-0 rounded-xl sm:rounded-full flex items-center justify-center gap-2 transition-all ${module.status === 'in-progress' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20 hover:bg-blue-500 hover:text-white'}`}
                                                     title="Start Module Lesson"
                                                 >
                                                     <Play className="w-5 h-5 sm:w-6 sm:h-6 fill-current" /> <span className="sm:hidden font-bold">Play Lesson</span>
                                                 </button>
                                                 <button
-                                                    onClick={() => handleStatusUpdate(i, 'completed')}
+                                                    onClick={() => handleStatusUpdate(module.originalIndex, 'completed')}
                                                     className="w-12 h-auto sm:w-12 sm:h-12 shrink-0 rounded-xl sm:rounded-full bg-green-500/10 text-green-500 border border-green-500/20 hover:bg-green-500 hover:text-white transition-all flex items-center justify-center"
                                                     title="Mark as Completed"
                                                 >
@@ -148,7 +200,7 @@ const CourseView = () => {
                                         )}
                                         {module.status === 'completed' && (
                                             <button
-                                                onClick={() => handleStatusUpdate(i, 'in-progress')}
+                                                onClick={() => handleStatusUpdate(module.originalIndex, 'in-progress')}
                                                 className="text-xs text-gray-400 hover:text-white underline w-full text-center sm:text-left py-2 sm:py-0"
                                             >
                                                 Undo Completion
@@ -157,6 +209,25 @@ const CourseView = () => {
                                     </div>
                                 </div>
                             </motion.div>
+                                ))}
+                                
+                                {/* Stage/Chapter Excellence Quiz Button */}
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.5 }}
+                                    className="flex justify-center mt-8 pt-4 border-t border-white/5"
+                                >
+                                    <button
+                                        onClick={() => navigate(`/course/${courseId}/quiz/${encodeURIComponent(stageName)}`)}
+                                        className="btn-primary py-3 px-8 text-sm flex items-center gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 shadow-lg shadow-purple-500/20"
+                                    >
+                                        <Zap className="w-4 h-4 fill-current text-yellow-400" />
+                                        Take Chapter Excellence Quiz
+                                    </button>
+                                </motion.div>
+
+                            </div>
                         ))
                     ) : (
                         <div className="glass-card p-12 text-center border-blue-500/20">
