@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, Award, BookOpen, Settings, Zap } from 'lucide-react';
+import { User, Mail, Award, BookOpen, Settings, Zap, Star } from 'lucide-react';
 import axios from 'axios';
 import Layout from '../components/Layout';
 
@@ -188,6 +188,39 @@ const Profile = () => {
                         <p className="text-gray-400 text-sm mb-1 uppercase tracking-widest font-bold">Streak</p>
                         <h3 className="text-3xl font-bold">{stats?.streak || 0} 🔥</h3>
                     </motion.div>
+                </div>
+
+                {/* Badges Section */}
+                <div className="mt-12">
+                    <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                        <Award className="text-yellow-400 w-6 h-6" /> Achievements & Badges
+                    </h2>
+                    
+                    {user?.badges && user.badges.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {user.badges.map((badge, idx) => (
+                                <motion.div 
+                                    key={idx}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: idx * 0.1 }}
+                                    className="glass-card p-6 border-white/5 flex flex-col items-center text-center group hover:border-yellow-500/30 transition-all relative overflow-hidden"
+                                >
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-500/5 rounded-full blur-xl group-hover:bg-yellow-500/10 transition-all"></div>
+                                    <div className="w-16 h-16 bg-gradient-to-tr from-yellow-500/20 to-orange-500/20 rounded-full flex items-center justify-center mb-4 border border-yellow-500/20 group-hover:scale-110 transition-transform shadow-lg shadow-yellow-500/10">
+                                        <Award className="w-8 h-8 text-yellow-400" />
+                                    </div>
+                                    <h3 className="font-bold text-lg mb-1">{badge.name}</h3>
+                                    <p className="text-xs text-gray-400">Earned: {new Date(badge.earnedAt).toLocaleDateString()}</p>
+                                </motion.div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="glass-card p-12 border-dashed border-white/10 text-center text-gray-400 rounded-3xl">
+                            <Star className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                            <p>Complete learning paths to earn mastery badges!</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </Layout>

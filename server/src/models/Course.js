@@ -36,15 +36,24 @@ const courseSchema = new mongoose.Schema({
         knownSkills: [String]
     },
     structure: [{
+        stage: String, // e.g., "Level 1: Fundamentals"
         chapter: String,
         dayRange: String,
         topic: String,
+        subtopics: [String], // Array of sub-skills covered
         description: String,
         estimatedTime: String,
         status: { type: String, enum: ['pending', 'in-progress', 'completed'], default: 'pending' },
         content: {
-            markdown: String
+            markdown: String,
+            youtubeId: String
         }
+    }],
+    chapterQuizzes: [{
+        stage: String,
+        score: Number,
+        youtubeId: String,
+        completed: { type: Boolean, default: false }
     }],
     isEnrolled: {
         type: Boolean,

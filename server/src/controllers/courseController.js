@@ -1,6 +1,7 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 import Course from '../models/Course.js';
 import User from '../models/User.js';
+import axios from 'axios';
 
 const client = new BedrockRuntimeClient({
     region: process.env.AWS_REGION || "us-east-1",
@@ -143,12 +144,25 @@ export const generateCourseStructure = async (req, res) => {
         console.log(`Current Skill Level: ${skillLevel}`);
         console.log(`Missing Skills Identified: ${Array.isArray(missingSkills) ? missingSkills.join(', ') : 'None'}`);
 
-        const prompt = `Generate a personalized learning roadmap for "${course.courseName}" targeting "${course.targetGoal}" in ${course.duration} days.
+        const prompt = `Generate a structured, rigorous, multi-stage learning roadmap for "${course.courseName}" targeting "${course.targetGoal}" in ${course.duration} days.
         Current Level: ${skillLevel}. Missing Skills: ${Array.isArray(missingSkills) ? missingSkills.join(', ') : 'None'}.
         Optimize for ${course.dailyTime} hours/day. 
         Total study hours available: ${course.duration * course.dailyTime}.
-        Return ONLY a JSON array of 4-6 modules where each module object has: 
-        chapter (e.g. "Chapter 1: Title"), topic, description, estimatedTime (e.g. "8 hours"), status (set to "pending").`;
+        
+        CRITICAL INSTRUCTION: You MUST divide the roadmap into EXACTLY 4 overarching stages (e.g., "Stage 1: Fundamentals", "Stage 2: Core Concepts", "Stage 3: Advanced Architectures", "Stage 4: Real-World Applications").
+        For EACH stage, you MUST generate EXACTLY 5 distinct modules (topics) that logically progress the user.
+        This means your final output MUST be an array containing EXACTLY 20 module objects in total (4 stages × 5 modules each).
+        
+        Return ONLY a JSON array where each object has EXACTLY the following format: 
+        {
+          "stage": "Name of the overarching stage/level",
+          "chapter": "e.g. Chapter 1: Title",
+          "topic": "Main topic covered (Specific module topic)",
+          "subtopics": ["Subtopic 1", "Subtopic 2", "Subtopic 3"],
+          "description": "Short summary of what will be learned in this specific topic",
+          "estimatedTime": "e.g. 8 hours",
+          "status": "pending"
+        }`;
 
         console.log("Sending prompt to Bedrock for structure generation...");
         const aiResponse = await callBedrock(prompt);
@@ -214,6 +228,25 @@ export const updateModuleStatus = async (req, res) => {
             if (status === 'completed') {
                 const user = await User.findById(req.user._id);
                 user.xp += 50; // default 50 XP per module
+
+                // --- BADGE LOGIC ---
+                // Check if all modules are now completed
+                const allCompleted = course.structure.every(m => m.status === 'completed');
+
+                // Check if we already have this course badge to avoid duplicates
+                const hasBadge = user.badges && user.badges.some(b => b.courseId.toString() === course._id.toString());
+
+                if (allCompleted && !hasBadge) {
+                    console.log(`Course ${course.courseName} completed! Granting badge to user ${user._id}`);
+                    if (!user.badges) user.badges = [];
+                    user.badges.push({
+                        name: `Master of ${course.courseName}`,
+                        icon: 'Award', // generic icon name for the frontend
+                        courseId: course._id
+                    });
+                }
+                // --- END BADGE LOGIC ---
+
                 await user.save();
             }
 
@@ -276,9 +309,33 @@ export const generateModuleContent = async (req, res) => {
         const result = JSON.parse(new TextDecoder().decode(response.body));
         const markdown = result.generation.trim();
 
-        // Save to cache
+        // Save text to cache
         if (!module.content) module.content = {};
         module.content.markdown = markdown;
+
+        // Fetch YouTube ID for this specific topic using the Official YouTube Data API v3
+        // If they already have an ID for this module from earlier, we don't refetch
+        if (!module.content.youtubeId && process.env.YOUTUBE_API_KEY) {
+            try {
+                console.log(`Searching Official YouTube API for Topic: ${module.topic}`);
+                const youtubeRes = await axios.get('https://www.googleapis.com/youtube/v3/search', {
+                    params: {
+                        part: 'snippet',
+                        q: `${module.topic} tutorial english`,
+                        key: process.env.YOUTUBE_API_KEY,
+                        type: 'video',
+                        maxResults: 1
+                    }
+                });
+                
+                if (youtubeRes.data.items && youtubeRes.data.items.length > 0) {
+                    module.content.youtubeId = youtubeRes.data.items[0].id.videoId;
+                    console.log(`Found YouTube ID: ${module.content.youtubeId}`);
+                }
+            } catch (ytError) {
+                console.error("YouTube API Search Error:", ytError.response?.data || ytError.message);
+            }
+        }
 
         // Auto transition status from pending to in-progress if they are just reading it for the first time
         if (module.status === 'pending') {
@@ -286,10 +343,150 @@ export const generateModuleContent = async (req, res) => {
         }
 
         await course.save();
-        res.json({ markdown });
+        res.json({ markdown: module.content.markdown, youtubeId: module.content.youtubeId });
 
     } catch (error) {
         console.error("Module Generation Error:", error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Phase 6: Generate Chapter Excellence Quiz
+export const generateChapterQuiz = async (req, res) => {
+    const { courseId, stageName } = req.params;
+
+    try {
+        const course = await Course.findById(courseId);
+        if (!course) return res.status(404).json({ message: 'Course not found' });
+
+        // Find all modules that belong to this stage to extract their subtopics
+        const stageModules = course.structure.filter(m => m.stage === stageName);
+        if (!stageModules.length) return res.status(404).json({ message: 'Stage not found in this course' });
+
+        // Compile a list of what they learned
+        const topics = stageModules.map(m => m.topic).join(', ');
+        
+        // Ensure prompt emphasizes strict JSON structure
+        const prompt = `You are a strict technical examiner. The student just finished the chapter/stage: "${stageName}" in the course: "${course.courseName}".
+        The topics they learned include: ${topics}.
+        
+        Generate a rigorous 5-question Multiple Choice Quiz (MCQ) testing them strictly on these topics.
+        
+        Return ONLY a raw JSON array of 5 objects. Do NOT include ANY text outside the JSON array.
+        Format EXACTLY like this:
+        [
+          {
+            "question": "...",
+            "options": ["Option A", "Option B", "Option C", "Option D"],
+            "answer": "Exact string of correct option",
+            "explanation": "Short reasoning why this is correct"
+          }
+        ]`;
+
+        console.log(`Generating Chapter Quiz for course ${courseId}, stage: ${stageName}`);
+        
+        const quizQuestions = await callBedrock(prompt);
+
+        // check if quiz already exists for stage to avoid duplicates
+        const existingQuizIndex = course.chapterQuizzes.findIndex(q => q.stage === stageName);
+        if (existingQuizIndex >= 0) {
+            // override it
+            course.chapterQuizzes[existingQuizIndex].questions = quizQuestions;
+        } else {
+            // create new
+            course.chapterQuizzes.push({
+                stage: stageName,
+                score: 0,
+                completed: false,
+                questions: quizQuestions
+            });
+        }
+
+        await course.save();
+        res.json({ questions: quizQuestions });
+
+    } catch (error) {
+        console.error("Quiz Generation Error:", error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Phase 7: Save Quiz Score
+export const submitChapterQuiz = async (req, res) => {
+    const { courseId, stageName, score } = req.body;
+
+    try {
+        const course = await Course.findById(courseId);
+        if (!course) return res.status(404).json({ message: 'Course not found' });
+
+        const quizIndex = course.chapterQuizzes.findIndex(q => q.stage === stageName);
+        if (quizIndex >= 0) {
+            course.chapterQuizzes[quizIndex].score = score;
+            course.chapterQuizzes[quizIndex].completed = true;
+        } else {
+            // Edge case fallback
+            course.chapterQuizzes.push({
+                stage: stageName,
+                score: score,
+                completed: true
+            });
+        }
+        
+        await course.save();
+        res.json(course);
+
+    } catch (error) {
+        console.error("Quiz Submission Error:", error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Phase 8: Get Chapter Video (Youtube API)
+export const getChapterVideo = async (req, res) => {
+    const { courseId, stageName } = req.params;
+
+    try {
+        const course = await Course.findById(courseId);
+        if (!course) return res.status(404).json({ message: 'Course not found' });
+
+        // Check if the video is already found for this chapter
+        let quizIndex = course.chapterQuizzes.findIndex(q => q.stage === stageName);
+        
+        // If the array item doesn't exist yet, we initialize it
+        if (quizIndex === -1) {
+            course.chapterQuizzes.push({ stage: stageName });
+            quizIndex = course.chapterQuizzes.length - 1;
+        }
+
+        if (course.chapterQuizzes[quizIndex].youtubeId) {
+            return res.json({ youtubeId: course.chapterQuizzes[quizIndex].youtubeId });
+        }
+
+        // If not found, hit the official YouTube API
+        if (process.env.YOUTUBE_API_KEY) {
+            console.log(`Searching Official YouTube API for Chapter: ${course.targetGoal} - ${stageName}`);
+            const youtubeRes = await axios.get('https://www.googleapis.com/youtube/v3/search', {
+                params: {
+                    part: 'snippet',
+                    q: `${course.targetGoal} ${stageName} full course tutorial english`,
+                    key: process.env.YOUTUBE_API_KEY,
+                    type: 'video',
+                    maxResults: 1,
+                    videoDuration: 'long' // Prefer longer masterclass videos for chapter-level
+                }
+            });
+            
+            if (youtubeRes.data.items && youtubeRes.data.items.length > 0) {
+                const newId = youtubeRes.data.items[0].id.videoId;
+                course.chapterQuizzes[quizIndex].youtubeId = newId;
+                await course.save();
+                return res.json({ youtubeId: newId });
+            }
+        }
+        res.json({ youtubeId: null });
+        
+    } catch (error) {
+        console.error("Chapter Video API Error:", error.response?.data || error.message);
         res.status(500).json({ message: error.message });
     }
 };

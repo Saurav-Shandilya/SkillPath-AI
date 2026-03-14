@@ -5,7 +5,9 @@ import mongoose from 'mongoose';
 
 import authRoutes from './routes/authRoutes.js';
 import courseRoutes from './routes/courseRoutes.js';
+import communityRoutes from './routes/communityRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import jobRoutes from './routes/jobRoutes.js';
 
 const app = express();
 
@@ -16,7 +18,9 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
+app.use('/api/community', communityRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/jobs', jobRoutes);
 
 // Basic Route
 app.get('/', (req, res) => {

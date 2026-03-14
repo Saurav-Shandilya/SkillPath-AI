@@ -34,6 +34,7 @@ const ModuleView = () => {
                     topic: currentModule.topic,
                     chapter: currentModule.chapter || currentModule.dayRange,
                     markdown: contentRes.data.markdown,
+                    youtubeId: contentRes.data.youtubeId,
                     status: currentModule.status
                 });
 
@@ -100,6 +101,24 @@ const ModuleView = () => {
                     </span>
                     <h1 className="text-4xl md:text-5xl font-bold leading-tight">{moduleData.topic}</h1>
                 </div>
+
+                {/* Smart YouTube Search Embed */}
+                {moduleData.youtubeId && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2 }}
+                        className="w-full aspect-video rounded-2xl overflow-hidden shadow-2xl shadow-blue-500/10 mb-12 border border-white/10 relative bg-[#0a0f1d]"
+                    >
+                        <iframe 
+                            className="w-full h-full absolute top-0 left-0"
+                            src={`https://www.youtube.com/embed/${moduleData.youtubeId}`} 
+                            allowFullScreen 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            title={`YouTube Tutorial for ${moduleData.topic}`}
+                        ></iframe>
+                    </motion.div>
+                )}
 
                 {/* Markdown Content Box */}
                 <motion.div
