@@ -60,7 +60,7 @@ const Profile = () => {
         }
     };
 
-    if (loading) return <Layout><div className="h-full flex items-center justify-center font-jost text-secondary">Loading profile...</div></Layout>;
+    if (loading) return <Layout><div className="h-full flex items-center justify-center text-gray-400">Loading profile...</div></Layout>;
 
     return (
         <Layout>
@@ -70,22 +70,22 @@ const Profile = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="glass-card p-10 mb-8 border-white/5 relative overflow-hidden"
                 >
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-accent1/5 rounded-full blur-3xl -z-10"></div>
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[100px] -z-10"></div>
 
                     <div className="flex flex-col md:flex-row items-center gap-8">
-                        <div className="w-32 h-32 rounded-3xl bg-gradient-to-br from-accent1 to-accent2 p-1 relative shadow-2xl shadow-accent1/20">
-                            <div className="w-full h-full bg-primary rounded-[22px] flex items-center justify-center">
+                        <div className="w-32 h-32 rounded-3xl bg-gradient-to-br from-blue-500 to-purple-600 p-1 relative shadow-2xl shadow-blue-500/20">
+                            <div className="w-full h-full bg-[#0B0F1A] rounded-[22px] flex items-center justify-center">
                                 <User className="text-white w-16 h-16" />
                             </div>
-                            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 border-4 border-primary rounded-full"></div>
+                            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 border-4 border-[#0B0F1A] rounded-full"></div>
                         </div>
 
                         <div className="text-center md:text-left flex-1">
                             <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
-                                <h1 className="text-4xl font-bricolage">{user?.name}</h1>
-                                <span className="px-3 py-1 bg-accent1/10 text-accent1 rounded-full text-xs font-bold border border-accent1/20 w-fit mx-auto md:mx-0">PRO LEARNER</span>
+                                <h1 className="text-4xl font-bold">{user?.name}</h1>
+                                <span className="px-3 py-1 bg-cyan-400/10 text-cyan-400 rounded-full text-xs font-bold border border-cyan-400/20 w-fit mx-auto md:mx-0">PRO LEARNER</span>
                             </div>
-                            <p className="text-secondary flex items-center justify-center md:justify-start gap-2 mb-6">
+                            <p className="text-gray-400 flex items-center justify-center md:justify-start gap-2 mb-6">
                                 <Mail className="w-4 h-4" /> {user?.email}
                             </p>
 
@@ -103,16 +103,16 @@ const Profile = () => {
 
                 {/* Edit Modal */}
                 {isEditing && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-primary/80 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0B0F1A]/80 backdrop-blur-sm">
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             className="glass-card p-8 w-full max-w-md border-white/10"
                         >
-                            <h2 className="text-2xl mb-6 font-bricolage text-center">Update Profile</h2>
+                            <h2 className="text-2xl mb-6 font-bold text-center">Update Profile</h2>
                             <form onSubmit={handleUpdateProfile} className="space-y-4">
                                 <div>
-                                    <label className="text-xs text-secondary font-bold uppercase mb-2 block">Full Name</label>
+                                    <label className="text-xs text-gray-400 font-bold uppercase mb-2 block">Full Name</label>
                                     <input
                                         type="text"
                                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-accent1 outline-none"
@@ -121,10 +121,10 @@ const Profile = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-xs text-secondary font-bold uppercase mb-2 block">Email Address</label>
+                                    <label className="text-xs text-gray-400 font-bold uppercase mb-2 block">Email Address</label>
                                     <input
                                         type="email"
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-accent1 outline-none"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-blue-500 outline-none"
                                         value={editData.email}
                                         onChange={(e) => setEditData({ ...editData, email: e.target.value })}
                                     />
@@ -154,39 +154,39 @@ const Profile = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="glass-card p-6 border-white/5 text-center group hover:border-accent1/20 transition-all"
+                        className="glass-card p-6 border-white/5 text-center group hover:border-blue-500/20 transition-all"
                     >
-                        <div className="w-12 h-12 bg-accent1/20 rounded-xl flex items-center justify-center text-accent1 mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-400 mx-auto mb-4 group-hover:scale-110 transition-transform">
                             <Award className="w-6 h-6" />
                         </div>
-                        <p className="text-secondary text-sm mb-1 uppercase tracking-widest font-bold">XP Points</p>
-                        <h3 className="text-3xl font-bricolage">{stats?.xp || 0}</h3>
+                        <p className="text-gray-400 text-sm mb-1 uppercase tracking-widest font-bold">XP Points</p>
+                        <h3 className="text-3xl font-bold">{stats?.xp || 0}</h3>
                     </motion.div>
 
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="glass-card p-6 border-white/5 text-center group hover:border-accent2/20 transition-all"
+                        className="glass-card p-6 border-white/5 text-center group hover:border-purple-500/20 transition-all"
                     >
-                        <div className="w-12 h-12 bg-accent2/20 rounded-xl flex items-center justify-center text-accent2 mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center text-purple-400 mx-auto mb-4 group-hover:scale-110 transition-transform">
                             <BookOpen className="w-6 h-6" />
                         </div>
-                        <p className="text-secondary text-sm mb-1 uppercase tracking-widest font-bold">Courses</p>
-                        <h3 className="text-3xl font-bricolage">{stats?.totalCourses || 0}</h3>
+                        <p className="text-gray-400 text-sm mb-1 uppercase tracking-widest font-bold">Courses</p>
+                        <h3 className="text-3xl font-bold">{stats?.totalCourses || 0}</h3>
                     </motion.div>
 
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 }}
-                        className="glass-card p-6 border-white/5 text-center group hover:border-accent1/20 transition-all"
+                        className="glass-card p-6 border-white/5 text-center group hover:border-cyan-400/20 transition-all"
                     >
-                        <div className="w-12 h-12 bg-accent1/20 rounded-xl flex items-center justify-center text-accent1 mx-auto mb-4 group-hover:scale-110 transition-transform">
+                        <div className="w-12 h-12 bg-cyan-400/10 rounded-xl flex items-center justify-center text-cyan-400 mx-auto mb-4 group-hover:scale-110 transition-transform">
                             <Zap className="w-6 h-6" />
                         </div>
-                        <p className="text-secondary text-sm mb-1 uppercase tracking-widest font-bold">Streak</p>
-                        <h3 className="text-3xl font-bricolage">{stats?.streak || 0} 🔥</h3>
+                        <p className="text-gray-400 text-sm mb-1 uppercase tracking-widest font-bold">Streak</p>
+                        <h3 className="text-3xl font-bold">{stats?.streak || 0} 🔥</h3>
                     </motion.div>
                 </div>
             </div>

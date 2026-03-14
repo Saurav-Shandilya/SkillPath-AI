@@ -71,8 +71,8 @@ const DiagnosticTest = () => {
     if (loading) return (
         <Layout>
             <div className="h-full flex flex-col items-center justify-center">
-                <Loader2 className="w-12 h-12 text-accent1 animate-spin mb-4" />
-                <p className="text-secondary animate-pulse">AI is preparing your diagnostic test...</p>
+                <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
+                <p className="text-gray-400 animate-pulse">AI is preparing your diagnostic test...</p>
             </div>
         </Layout>
     );
@@ -86,16 +86,16 @@ const DiagnosticTest = () => {
                 <div className="mb-10">
                     <div className="flex justify-between items-end mb-4">
                         <div>
-                            <span className="text-accent1 font-bold text-sm uppercase tracking-widest">Diagnostic Test</span>
-                            <h1 className="text-3xl mt-1">{course.courseName} Assessment</h1>
+                            <span className="text-blue-400 font-bold text-sm uppercase tracking-widest">Diagnostic Test</span>
+                            <h1 className="text-3xl mt-1 font-bold">{course.courseName} Assessment</h1>
                         </div>
-                        <span className="text-secondary font-medium">Question {currentQuestion + 1} of {course.diagnosticTest.length}</span>
+                        <span className="text-gray-400 font-medium">Question {currentQuestion + 1} of {course.diagnosticTest.length}</span>
                     </div>
                     <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
                         <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${progress}%` }}
-                            className="h-full bg-accent1 shadow-[0_0_10px_rgba(255,106,61,0.5)]"
+                            className="h-full bg-gradient-to-r from-blue-500 to-purple-600 shadow-[0_0_10px_rgba(59,130,246,0.5)]"
                         ></motion.div>
                     </div>
                 </div>
@@ -109,8 +109,8 @@ const DiagnosticTest = () => {
                         className="glass-card p-10 border-white/5"
                     >
                         <div className="flex items-start gap-4 mb-8">
-                            <div className="w-10 h-10 rounded-xl bg-accent2/20 flex items-center justify-center shrink-0">
-                                < Award className="text-accent2 w-6 h-6" />
+                            <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center shrink-0">
+                                < Award className="text-purple-400 w-6 h-6" />
                             </div>
                             <h2 className="text-2xl font-medium leading-tight">{question.question}</h2>
                         </div>
@@ -122,12 +122,12 @@ const DiagnosticTest = () => {
                                         key={idx}
                                         onClick={() => handleAnswer(option)}
                                         className={`w-full text-left p-5 rounded-2xl border transition-all flex justify-between items-center group ${answers[currentQuestion] === option
-                                            ? 'bg-accent1/10 border-accent1 text-white shadow-lg shadow-accent1/5'
-                                            : 'bg-white/5 border-white/10 text-secondary hover:border-white/30 hover:bg-white/10'
+                                            ? 'bg-blue-500/10 border-blue-500 text-white shadow-lg shadow-blue-500/20'
+                                            : 'bg-white/5 border-white/10 text-gray-400 hover:border-blue-500/30 hover:bg-blue-500/10'
                                             }`}
                                     >
                                         <span className="text-lg">{option}</span>
-                                        {answers[currentQuestion] === option && <CheckCircle2 className="w-6 h-6 text-accent1" />}
+                                        {answers[currentQuestion] === option && <CheckCircle2 className="w-6 h-6 text-blue-500" />}
                                     </button>
                                 ))
                             ) : (
@@ -137,12 +137,12 @@ const DiagnosticTest = () => {
                                     className="space-y-2"
                                 >
                                     <textarea
-                                        className="w-full h-40 bg-white/5 border border-white/10 rounded-2xl p-6 text-white text-lg focus:outline-none focus:border-accent1 transition-colors resize-none placeholder:text-secondary/30"
+                                        className="w-full h-40 bg-white/5 border border-white/10 rounded-2xl p-6 text-white text-lg focus:outline-none focus:border-blue-500 transition-colors resize-none placeholder:text-gray-500/50"
                                         placeholder="Type your explanation here..."
                                         value={answers[currentQuestion] || ''}
                                         onChange={(e) => handleAnswer(e.target.value)}
                                     />
-                                    <p className="text-sm text-secondary/50 text-right">Provide a concise technical explanation.</p>
+                                    <p className="text-sm text-gray-500 text-right">Provide a concise technical explanation.</p>
                                 </motion.div>
                             )}
                         </div>
@@ -173,9 +173,9 @@ const DiagnosticTest = () => {
                     </motion.div>
                 </AnimatePresence>
 
-                <div className="mt-8 flex items-center gap-3 bg-accent2/10 p-4 rounded-2xl border border-accent2/20">
-                    <AlertCircle className="text-accent2 w-5 h-5 shrink-0" />
-                    <p className="text-sm text-accent2/80">Don't worry if you're not sure. This assessment helps us tailor the course to your exact level.</p>
+                <div className="mt-8 flex items-center gap-3 bg-purple-500/10 p-4 rounded-2xl border border-purple-500/20">
+                    <AlertCircle className="text-purple-400 w-5 h-5 shrink-0" />
+                    <p className="text-sm text-purple-400/80">Don't worry if you're not sure. This assessment helps us tailor the course to your exact level.</p>
                 </div>
             </div>
         </Layout>
