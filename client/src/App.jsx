@@ -14,6 +14,7 @@ import ModuleView from './pages/ModuleView';
 import Community from './pages/Community';
 import Jobs from './pages/Jobs';
 import QuizView from './pages/QuizView';
+import EnrolledCourses from './pages/EnrolledCourses';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
         <Route path="/course/:courseId/module/:moduleIndex" element={<ModuleView />} />
         <Route path="/course/:courseId/quiz/:stageName" element={<QuizView />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/enrolled-courses" element={<EnrolledCourses />} />
         <Route path="/community" element={<Community />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="*" element={<Navigate to="/login" />} />
