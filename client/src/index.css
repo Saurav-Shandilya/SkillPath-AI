@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1a2238;
+  --color-secondary: #9daaf2;
+  --color-accent1: #ff6a3d;
+  --color-accent2: #f4db7d;
+
+  --font-bricolage: "Bricolage Grotesque", sans-serif;
+  --font-jost: "Jost", sans-serif;
+}
+
+:root {
+  --primary: #1a2238;
+  --secondary: #9daaf2;
+  --accent1: #ff6a3d;
+  --accent2: #f4db7d;
+}
+
+@utility font-jost {
+  font-family: Jost, sans-serif;
+}
+
+@utility font-bricolage {
+  font-family: "Bricolage Grotesque", sans-serif;
+}
+
+body {
+  @apply font-jost bg-primary text-white antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply font-bricolage font-bold;
+}
+
+@utility glass {
+  background-color: rgb(255 255 255 / 0.1);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgb(255 255 255 / 0.2);
+  border-radius: 0.75rem;
+}
+
+@utility glass-card {
+  @apply glass transition-all duration-300;
+
+  &:hover {
+    background-color: rgb(255 255 255 / 0.15);
+  }
+}
+
+@utility btn-primary {
+  @apply bg-accent1 text-white px-6 py-2 rounded-lg font-bold transition-all transform;
+
+  &:hover {
+    @apply bg-accent1/80 scale-105;
+  }
+
+  &:active {
+    @apply scale-95;
+  }
+}
+
+@utility btn-secondary {
+  @apply bg-secondary text-primary px-6 py-2 rounded-lg font-bold transition-all transform;
+
+  &:hover {
+    @apply bg-secondary/80 scale-105;
+  }
+
+  &:active {
+    @apply scale-95;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-primary;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-secondary/30 rounded-full hover:bg-secondary/50 transition-colors;
+}

@@ -1,0 +1,197 @@
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { User, Mail, Award, BookOpen, Settings, Zap } from 'lucide-react';
+import axios from 'axios';
+import Layout from '../components/Layout';
+
+const Profile = () => {
+    const [user, setUser] = useState(null);
+    const [stats, setStats] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editData, setEditData] = useState({ name: '', email: '' });
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+                const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+                const { data } = await axios.get(`${API_BASE}/users/profile`, {
+                    headers: { Authorization: `Bearer ${userInfo.token}` }
+                });
+
+                // Merge API data with localStorage as fallback for name/email
+                setUser({
+                    ...data.user,
+                    name: data.user.name || userInfo.name,
+                    email: data.user.email || userInfo.email
+                });
+                setStats(data.stats);
+                setEditData({
+                    name: data.user.name || userInfo.name,
+                    email: data.user.email || userInfo.email
+                });
+            } catch (err) {
+                console.error('Error fetching profile:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProfile();
+    }, []);
+
+    const handleUpdateProfile = async (e) => {
+        e.preventDefault();
+        try {
+            const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+            const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+            const { data } = await axios.put(`${API_BASE}/users/profile`, editData, {
+                headers: { Authorization: `Bearer ${userInfo.token}` }
+            });
+            setUser(prev => ({ ...prev, name: data.name, email: data.email }));
+
+            // Update local storage too
+            const newUserInfo = { ...userInfo, name: data.name, email: data.email };
+            localStorage.setItem('userInfo', JSON.stringify(newUserInfo));
+
+            setIsEditing(false);
+        } catch (err) {
+            console.error('Error updating profile:', err);
+        }
+    };
+
+    if (loading) return <Layout><div className="h-full flex items-center justify-center font-jost text-secondary">Loading profile...</div></Layout>;
+
+    return (
+        <Layout>
+            <div className="max-w-4xl mx-auto py-10">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="glass-card p-10 mb-8 border-white/5 relative overflow-hidden"
+                >
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-accent1/5 rounded-full blur-3xl -z-10"></div>
+
+                    <div className="flex flex-col md:flex-row items-center gap-8">
+                        <div className="w-32 h-32 rounded-3xl bg-gradient-to-br from-accent1 to-accent2 p-1 relative shadow-2xl shadow-accent1/20">
+                            <div className="w-full h-full bg-primary rounded-[22px] flex items-center justify-center">
+                                <User className="text-white w-16 h-16" />
+                            </div>
+                            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 border-4 border-primary rounded-full"></div>
+                        </div>
+
+                        <div className="text-center md:text-left flex-1">
+                            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-2">
+                                <h1 className="text-4xl font-bricolage">{user?.name}</h1>
+                                <span className="px-3 py-1 bg-accent1/10 text-accent1 rounded-full text-xs font-bold border border-accent1/20 w-fit mx-auto md:mx-0">PRO LEARNER</span>
+                            </div>
+                            <p className="text-secondary flex items-center justify-center md:justify-start gap-2 mb-6">
+                                <Mail className="w-4 h-4" /> {user?.email}
+                            </p>
+
+                            <div className="flex flex-wrap justify-center md:justify-start gap-4">
+                                <button
+                                    onClick={() => setIsEditing(true)}
+                                    className="btn-primary py-2 px-6 text-sm flex items-center gap-2"
+                                >
+                                    <Settings className="w-4 h-4" /> Edit Profile
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* Edit Modal */}
+                {isEditing && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-primary/80 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="glass-card p-8 w-full max-w-md border-white/10"
+                        >
+                            <h2 className="text-2xl mb-6 font-bricolage text-center">Update Profile</h2>
+                            <form onSubmit={handleUpdateProfile} className="space-y-4">
+                                <div>
+                                    <label className="text-xs text-secondary font-bold uppercase mb-2 block">Full Name</label>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-accent1 outline-none"
+                                        value={editData.name}
+                                        onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-secondary font-bold uppercase mb-2 block">Email Address</label>
+                                    <input
+                                        type="email"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-accent1 outline-none"
+                                        value={editData.email}
+                                        onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                                    />
+                                </div>
+                                <div className="flex gap-4 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsEditing(false)}
+                                        className="flex-1 px-6 py-3 rounded-xl border border-white/10 text-secondary hover:bg-white/5 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="flex-1 btn-primary py-3"
+                                    >
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="glass-card p-6 border-white/5 text-center group hover:border-accent1/20 transition-all"
+                    >
+                        <div className="w-12 h-12 bg-accent1/20 rounded-xl flex items-center justify-center text-accent1 mx-auto mb-4 group-hover:scale-110 transition-transform">
+                            <Award className="w-6 h-6" />
+                        </div>
+                        <p className="text-secondary text-sm mb-1 uppercase tracking-widest font-bold">XP Points</p>
+                        <h3 className="text-3xl font-bricolage">{stats?.xp || 0}</h3>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="glass-card p-6 border-white/5 text-center group hover:border-accent2/20 transition-all"
+                    >
+                        <div className="w-12 h-12 bg-accent2/20 rounded-xl flex items-center justify-center text-accent2 mx-auto mb-4 group-hover:scale-110 transition-transform">
+                            <BookOpen className="w-6 h-6" />
+                        </div>
+                        <p className="text-secondary text-sm mb-1 uppercase tracking-widest font-bold">Courses</p>
+                        <h3 className="text-3xl font-bricolage">{stats?.totalCourses || 0}</h3>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="glass-card p-6 border-white/5 text-center group hover:border-accent1/20 transition-all"
+                    >
+                        <div className="w-12 h-12 bg-accent1/20 rounded-xl flex items-center justify-center text-accent1 mx-auto mb-4 group-hover:scale-110 transition-transform">
+                            <Zap className="w-6 h-6" />
+                        </div>
+                        <p className="text-secondary text-sm mb-1 uppercase tracking-widest font-bold">Streak</p>
+                        <h3 className="text-3xl font-bricolage">{stats?.streak || 0} 🔥</h3>
+                    </motion.div>
+                </div>
+            </div>
+        </Layout>
+    );
+};
+
+export default Profile;
