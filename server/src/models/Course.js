@@ -41,7 +41,8 @@ const courseSchema = new mongoose.Schema({
         topic: String,
         description: String,
         estimatedTime: String,
-        status: { type: String, enum: ['pending', 'in-progress', 'completed'], default: 'pending' }
+        status: { type: String, enum: ['pending', 'in-progress', 'completed'], default: 'pending' },
+        content: { type: String } // AI-generated study material for the topic
     }],
     isEnrolled: {
         type: Boolean,

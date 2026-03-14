@@ -1,8 +1,7 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { LogOut, User, BookOpen, LayoutDashboard } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import AIMentor from './AIMentor';
+import '../dashboard.css';
 
 const Layout = ({ children }) => {
     const navigate = useNavigate();
@@ -14,62 +13,42 @@ const Layout = ({ children }) => {
         navigate('/login');
     };
 
-    const navItems = [
-        { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-        { name: 'New Course', path: '/new-course', icon: BookOpen },
-        { name: 'Profile', path: '/profile', icon: User },
-    ];
-
     return (
-        <div className="min-h-screen bg-primary text-white font-jost flex">
-            {/* Sidebar */}
-            <nav className="w-64 glass border-r border-white/10 p-6 flex flex-col fixed h-full">
-                <div className="flex items-center gap-2 mb-10 px-2">
-                    <div className="w-8 h-8 bg-accent1 rounded-lg"></div>
-                    <h2 className="text-2xl font-bricolage tracking-tight">SkillPath <span className="text-accent1">AI</span></h2>
+        <div className="dashboard-root">
+            {/* EXACT SIDEBAR FROM DASHBOARD */}
+            <aside className="dash-sidebar">
+                <div className="dash-logo" style={{ cursor: 'pointer' }} onClick={() => navigate('/dashboard')}>
+                    <div className="dash-logo-icon">🚀</div>
+                    <div className="dash-logo-text">SkillPath <span>AI</span></div>
                 </div>
-
-                <div className="flex-1 space-y-2">
-                    {navItems.map((item) => (
-                        <button
-                            key={item.path}
-                            onClick={() => navigate(item.path)}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${location.pathname === item.path
-                                ? 'bg-accent1 text-white shadow-lg shadow-accent1/20'
-                                : 'hover:bg-white/5 text-secondary'
-                                }`}
-                        >
-                            <item.icon className="w-5 h-5" />
-                            <span className="font-medium">{item.name}</span>
-                        </button>
-                    ))}
+                <div className="dash-nav-section">
+                    <div className="dash-nav-label">Main</div>
+                    <div className={`dash-nav-item ${location.pathname === '/dashboard' ? 'active' : ''}`} onClick={() => navigate('/dashboard')}><span className="dash-nav-icon">⊞</span> Dashboard</div>
+                    <div className={`dash-nav-item ${location.pathname === '/new-course' ? 'active' : ''}`} onClick={() => navigate('/new-course')}><span className="dash-nav-icon">📚</span> New Course <span className="dash-badge-pill">New</span></div>
+                    <div className={`dash-nav-item ${location.pathname === '/profile' ? 'active' : ''}`} onClick={() => navigate('/profile')}><span className="dash-nav-icon">👤</span> Profile</div>
                 </div>
-
-                <div className="mt-auto border-t border-white/10 pt-6">
-                    <div className="flex items-center gap-3 px-2 mb-6">
-                        <div className="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center border border-white/10">
-                            <User className="text-secondary w-6 h-6" />
-                        </div>
-                        <div className="overflow-hidden">
-                            <p className="text-sm font-bold truncate">{userInfo?.name || 'User'}</p>
-                            <p className="text-xs text-secondary truncate">{userInfo?.email}</p>
+                
+                <div className="dash-sidebar-bottom">
+                    <div className="dash-user-card" onClick={() => navigate('/profile')}>
+                        <div className="dash-avatar">{userInfo?.name ? userInfo.name.charAt(0).toUpperCase() : 'U'}</div>
+                        <div className="dash-user-info">
+                            <div className="dash-uname">{userInfo?.name || 'User'}</div>
+                            <div className="dash-uemail" style={{maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace:'nowrap'}}>{userInfo?.email}</div>
                         </div>
                     </div>
-                    <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-red-400 transition-all"
-                    >
-                        <LogOut className="w-5 h-5" />
-                        <span className="font-medium">Logout</span>
-                    </button>
+                    <button onClick={handleLogout} className="dash-logout-btn">⇢ &nbsp;Logout</button>
                 </div>
-            </nav>
+            </aside>
 
-            {/* Main Content */}
-            <main className="flex-1 ml-64 p-8 relative">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-secondary/5 rounded-full blur-3xl -z-10"></div>
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent1/5 rounded-full blur-3xl -z-10"></div>
-                {children}
+            {/* MAIN CONTENT AREA */}
+            <main className="dash-main-content relative overflow-y-auto w-full h-full">
+                {/* Background glow effects to match original aesthetic */}
+                <div className="absolute top-0 right-0 w-96 h-96 bg-[var(--dash-accent)]/5 rounded-full blur-3xl -z-10"></div>
+                
+                <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    {children}
+                </div>
+                
                 <AIMentor context={`User ${userInfo?.name} is on the ${location.pathname} page.`} />
             </main>
         </div>
