@@ -175,7 +175,7 @@ const DiagnosticTest = () => {
 
                 <div className="mt-8 flex items-center gap-3 bg-accent2/10 p-4 rounded-2xl border border-accent2/20">
                     <AlertCircle className="text-accent2 w-5 h-5 shrink-0" />
-                    <p className="text-sm text-accent2/80">Don't worry if you're not sure. This assessment helps us tailor the course to your exact level.</p>
+                    <p className="text-sm text-accent2/80">Don&apos;t worry if you&apos;re not sure. This assessment helps us tailor the course to your exact level.</p>
                 </div>
             </div>
         </Layout>

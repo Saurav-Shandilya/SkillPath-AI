@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, Suspense } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
     Bot, Sparkles, Target, Zap, ChevronRight, CheckCircle2, 
@@ -171,11 +171,8 @@ const FloatingNetwork = () => {
 const Landing = () => {
     const navigate = useNavigate();
     const [scrolled, setScrolled] = useState(false);
-    const { scrollYProgress } = useScroll();
     
-    // Parallax effects
-    const y1 = useTransform(scrollYProgress, [0, 1], [0, -100]);
-    const y2 = useTransform(scrollYProgress, [0, 1], [0, -50]);
+    
     
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -188,8 +185,6 @@ const Landing = () => {
         { name: 'Home', href: '#' },
         { name: 'Features', href: '#features' },
         { name: 'How It Works', href: '#how-it-works' },
-        { name: 'Projects', href: '#projects' },
-        { name: 'Community', href: '#community' },
     ];
 
     // How It Works steps

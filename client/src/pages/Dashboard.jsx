@@ -50,7 +50,7 @@ const Dashboard = () => {
             }
         };
         fetchDashboardData();
-    }, []);
+    }, [navigate]);
 
     if (loading) return <Layout><div className="h-full flex items-center justify-center font-jost text-secondary">Loading dashboard...</div></Layout>;
 
