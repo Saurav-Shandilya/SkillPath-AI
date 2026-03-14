@@ -29,10 +29,10 @@ const Register = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-primary p-4 overflow-hidden relative">
+        <div className="min-h-screen flex items-center justify-center bg-[#0B0F1A] p-4 overflow-hidden relative">
             {/* Background blobs for depth */}
-            <div className="absolute top-[-10%] left-[-10%] w-72 h-72 bg-secondary/20 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-accent1/10 rounded-full blur-3xl"></div>
+            <div className="absolute top-[-10%] left-[-10%] w-72 h-72 bg-blue-600/20 rounded-full blur-[128px] animate-pulse"></div>
+            <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-purple-600/20 rounded-full blur-[128px]"></div>
 
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -40,8 +40,8 @@ const Register = () => {
                 className="glass-card w-full max-w-md p-8 relative z-10"
             >
                 <div className="text-center mb-10">
-                    <h1 className="text-4xl text-white mb-2 tracking-tight">SkillPath <span className="text-accent1">AI</span></h1>
-                    <p className="text-secondary font-jost">Create your account to start learning</p>
+                    <h1 className="text-4xl text-white mb-2 tracking-tight font-bold">SkillPath <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">AI</span></h1>
+                    <p className="text-gray-400">Create your account to start learning</p>
                 </div>
 
                 {error && (
@@ -100,14 +100,14 @@ const Register = () => {
                         <div className="absolute inset-0 flex items-center">
                             <div className="w-full border-t border-white/10"></div>
                         </div>
-                        <span className="relative px-4 bg-primary text-secondary/50 text-sm uppercase tracking-widest font-jost">or continue with</span>
+                        <span className="relative px-4 bg-[#0B0F1A] text-gray-400 text-sm uppercase tracking-widest">or continue with</span>
                     </div>
 
                     <GoogleLoginBtn />
                 </form>
 
-                <p className="mt-8 text-center text-secondary/70">
-                    Already have an account? <Link to="/login" className="text-accent2 hover:underline">Login here</Link>
+                <p className="mt-8 text-center text-gray-400">
+                    Already have an account? <Link to="/login" className="text-blue-400 hover:text-blue-300 transition-colors">Login here</Link>
                 </p>
             </motion.div>
         </div>

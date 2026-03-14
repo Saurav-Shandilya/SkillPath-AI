@@ -5,7 +5,8 @@ import {
     Bot, Sparkles, Target, Zap, ChevronRight, CheckCircle2, 
     Brain, MessageSquare, BookOpen, LayoutDashboard, 
     Trophy, Lightbulb, Rocket, Users, Github, Twitter, 
-    Linkedin, Play, ArrowRight, Cpu, Network, LineChart
+    Linkedin, Play, ArrowRight, Cpu, Network, LineChart,
+    Menu, X
 } from 'lucide-react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -171,6 +172,7 @@ const FloatingNetwork = () => {
 const Landing = () => {
     const navigate = useNavigate();
     const [scrolled, setScrolled] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { scrollYProgress } = useScroll();
     
     // Parallax effects
@@ -338,7 +340,7 @@ const Landing = () => {
                         ))}
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="hidden md:flex items-center gap-4">
                         <button 
                             onClick={() => navigate('/login')} 
                             className="hidden sm:block text-gray-300 hover:text-white transition-colors font-medium"
@@ -352,7 +354,51 @@ const Landing = () => {
                             Get Started
                         </button>
                     </div>
+
+                    {/* Mobile Menu Button */}
+                    <div className="md:hidden flex items-center">
+                        <button 
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            className="text-gray-300 hover:text-white p-2"
+                        >
+                            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                        </button>
+                    </div>
                 </div>
+
+                {/* Mobile Menu Dropdown */}
+                {mobileMenuOpen && (
+                    <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="md:hidden bg-[#0B0F1A]/95 border-b border-white/10 backdrop-blur-xl px-6 py-4 flex flex-col gap-4"
+                    >
+                        {navItems.map((item) => (
+                            <a 
+                                key={item.name} 
+                                href={item.href}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="text-gray-400 hover:text-white transition-colors text-base font-medium py-2"
+                            >
+                                {item.name}
+                            </a>
+                        ))}
+                        <div className="border-t border-white/10 mt-2 pt-4 flex flex-col gap-3">
+                            <button 
+                                onClick={() => navigate('/login')} 
+                                className="w-full bg-white/5 border border-white/10 text-white py-3 rounded-xl font-medium"
+                            >
+                                Login
+                            </button>
+                            <button
+                                onClick={() => navigate('/register')}
+                                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-semibold"
+                            >
+                                Get Started Free
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
             </motion.nav>
 
             {/* Hero Section - Centered Text with 3D Background */}
@@ -390,15 +436,15 @@ const Landing = () => {
                             <span className="text-sm font-medium text-gray-300">The Future of Personalized Learning</span>
                         </motion.div>
 
-                        <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight">
-                            Learn Only What You <br />
+                        <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold leading-tight">
+                            Learn Only What You <br className="hidden md:block" />
                             Need with{' '}
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-purple-400">
                                 AI
                             </span>
                         </h1>
 
-                        <p className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
+                        <p className="text-lg md:text-xl md:px-0 text-gray-400 max-w-3xl mx-auto leading-relaxed">
                             SkillPath AI analyzes your current skills, detects gaps, and builds a personalized roadmap to help you reach your dream career faster.
                         </p>
 

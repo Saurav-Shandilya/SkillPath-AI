@@ -49,15 +49,15 @@ const NewCourse = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="mb-12"
                 >
-                    <h1 className="text-5xl mb-4">What do you want to <span className="text-accent1">Master?</span></h1>
-                    <p className="text-xl text-secondary">Tell us your goal, and our AI will build a custom path for you.</p>
+                    <h1 className="text-5xl mb-4 font-bold tracking-tight">What do you want to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Master?</span></h1>
+                    <p className="text-xl text-gray-400">Tell us your goal, and our AI will build a custom path for you.</p>
                 </motion.div>
 
                 <form onSubmit={handleSubmit} className="space-y-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="space-y-2">
-                            <label className="text-secondary flex items-center gap-2 mb-2 font-medium">
-                                <BookOpen className="w-4 h-4 text-accent1" /> Course Name
+                            <label className="text-gray-400 flex items-center gap-2 mb-2 font-medium">
+                                <BookOpen className="w-4 h-4 text-blue-400" /> Course Name
                             </label>
                             <input
                                 type="text"
@@ -70,8 +70,8 @@ const NewCourse = () => {
                         </motion.div>
 
                         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="space-y-2">
-                            <label className="text-secondary flex items-center gap-2 mb-2 font-medium">
-                                <Target className="w-4 h-4 text-accent1" /> Target Goal
+                            <label className="text-gray-400 flex items-center gap-2 mb-2 font-medium">
+                                <Target className="w-4 h-4 text-blue-400" /> Target Goal
                             </label>
                             <input
                                 type="text"
@@ -84,8 +84,8 @@ const NewCourse = () => {
                         </motion.div>
 
                         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }} className="space-y-2">
-                            <label className="text-secondary flex items-center gap-2 mb-2 font-medium">
-                                <Calendar className="w-4 h-4 text-accent1" /> Planned Timeline (Days)
+                            <label className="text-gray-400 flex items-center gap-2 mb-2 font-medium">
+                                <Calendar className="w-4 h-4 text-blue-400" /> Planned Timeline (Days)
                             </label>
                             <input
                                 type="number"
@@ -98,8 +98,8 @@ const NewCourse = () => {
                         </motion.div>
 
                         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }} className="space-y-2">
-                            <label className="text-secondary flex items-center gap-2 mb-2 font-medium">
-                                <Clock className="w-4 h-4 text-accent1" /> Daily Learning Time (Hours)
+                            <label className="text-gray-400 flex items-center gap-2 mb-2 font-medium">
+                                <Clock className="w-4 h-4 text-blue-400" /> Daily Learning Time (Hours)
                             </label>
                             <select
                                 className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-white text-lg focus:outline-none focus:border-accent1 transition-colors appearance-none"
@@ -147,8 +147,8 @@ const NewCourse = () => {
                             transition={{ delay: 0.6 + (i * 0.1) }}
                             className="p-6 glass-card text-center"
                         >
-                            <h3 className="text-accent2 text-lg mb-1">{feature.title}</h3>
-                            <p className="text-sm text-secondary">{feature.desc}</p>
+                            <h3 className="text-purple-400 font-bold text-lg mb-1">{feature.title}</h3>
+                            <p className="text-sm text-gray-400">{feature.desc}</p>
                         </motion.div>
                     ))}
                 </div>

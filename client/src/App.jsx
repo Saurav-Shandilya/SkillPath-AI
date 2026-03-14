@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import Landing from './pages/Landing';
 import Profile from './pages/Profile';
 import CourseView from './pages/CourseView';
+import ModuleView from './pages/ModuleView';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
         <Route path="/skill-gap/:courseId" element={<SkillGapAnalysis />} />
         <Route path="/generate-course/:courseId" element={<CourseGeneration />} />
         <Route path="/course/:courseId" element={<CourseView />} />
+        <Route path="/course/:courseId/module/:moduleIndex" element={<ModuleView />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>

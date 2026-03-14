@@ -46,14 +46,14 @@ const AIMentor = ({ context }) => {
     };
 
     return (
-        <div className="fixed bottom-8 right-8 z-50">
+        <div className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50">
             <AnimatePresence>
                 {isOpen && (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                        className="glass-card w-96 h-[500px] mb-4 flex flex-col overflow-hidden border-accent1/20 shadow-2xl shadow-black/50"
+                        className="glass-card w-[calc(100vw-2rem)] sm:w-96 h-[400px] sm:h-[500px] mb-4 flex flex-col overflow-hidden border-accent1/20 shadow-2xl shadow-black/50"
                     >
                         {/* Header */}
                         <div className="p-4 bg-accent1/10 border-b border-white/10 flex justify-between items-center">

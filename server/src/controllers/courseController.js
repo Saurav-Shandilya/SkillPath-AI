@@ -226,3 +226,70 @@ export const updateModuleStatus = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+export const generateModuleContent = async (req, res) => {
+    const { courseId, moduleIndex } = req.params;
+
+    try {
+        const course = await Course.findById(courseId);
+        if (!course) return res.status(404).json({ message: 'Course not found' });
+
+        const module = course.structure[moduleIndex];
+        if (!module) return res.status(404).json({ message: 'Module not found' });
+
+        // Check cache
+        if (module.content && module.content.markdown) {
+            return res.json({ markdown: module.content.markdown });
+        }
+
+        const prompt = `You are an expert technical instructor teaching "${course.courseName}".
+        Write a comprehensive, engaging, and highly detailed lesson for the topic: "${module.topic}".
+        The description of this module is: "${module.description}".
+        
+        Using Markdown formatting exclusively, provide:
+        - A clear introduction explaining the concept.
+        - Detailed step-by-step explanations or theoretical deep-dives.
+        - Practical real-world examples (with code blocks if applicable to the topic).
+        - Textual visuals like Markdown tables, mermaid.js diagrams, or ascii representations to aid understanding where possible.
+        - A summary or key takeaways section at the end.
+        
+        Do NOT wrap the entire response in a JSON object. Return raw Markdown text.`;
+
+        console.log(`Generating detailed content for ${course.courseName} -> ${module.topic}`);
+        
+        // Custom wrapper for bedrock since the existing one expects JSON parsing
+        const formattedPrompt = `<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n\n${prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n`;
+        
+        const command = new InvokeModelCommand({
+            modelId: "meta.llama3-8b-instruct-v1:0",
+            body: JSON.stringify({
+                prompt: formattedPrompt,
+                max_gen_len: 2048,
+                temperature: 0.5,
+                top_p: 0.9,
+            }),
+            contentType: "application/json",
+            accept: "application/json",
+        });
+
+        const response = await client.send(command);
+        const result = JSON.parse(new TextDecoder().decode(response.body));
+        const markdown = result.generation.trim();
+
+        // Save to cache
+        if (!module.content) module.content = {};
+        module.content.markdown = markdown;
+
+        // Auto transition status from pending to in-progress if they are just reading it for the first time
+        if (module.status === 'pending') {
+            module.status = 'in-progress';
+        }
+
+        await course.save();
+        res.json({ markdown });
+
+    } catch (error) {
+        console.error("Module Generation Error:", error);
+        res.status(500).json({ message: error.message });
+    }
+};

@@ -7,14 +7,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#1a2238",
-        secondary: "#9daaf2",
-        accent1: "#ff6a3d",
-        accent2: "#f4db7d",
+        primary: "#0B0F1A",
+        secondary: "#9ca3af",
+        accent1: "#3b82f6",
+        accent2: "#a855f7",
       },
       fontFamily: {
-        bricolage: ["'Bricolage Grotesque'", "sans-serif"],
-        jost: ["Jost", "sans-serif"],
+        sans: ["sans-serif"],
       },
       backdropBlur: {
         xs: '2px',
