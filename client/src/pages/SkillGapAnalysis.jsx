@@ -48,7 +48,7 @@ const SkillGapAnalysis = () => {
                     <div className="relative z-10">
                         <span className="text-accent2 font-bold tracking-widest uppercase text-sm">Analysis Complete</span>
                         <h1 className="text-5xl mt-2 mb-4">You are a <span className="text-accent1">{results.skillLevel}</span></h1>
-                        <p className="text-xl text-secondary max-w-md">We've identified {results.missingSkills.length} key areas to focus on to reach your goal: <span className="text-white italic">{course.targetGoal}</span></p>
+                        <p className="text-xl text-secondary max-w-md">We&apos;ve identified {results.missingSkills.length} key areas to focus on to reach your goal: <span className="text-white italic">{course.targetGoal}</span></p>
                     </div>
                     <div className="relative z-10 text-center">
                         <div className="w-32 h-32 rounded-full border-4 border-accent1 flex items-center justify-center mb-2 shadow-[0_0_30px_rgba(255,106,61,0.3)]">
@@ -115,7 +115,7 @@ const SkillGapAnalysis = () => {
 
                     <h2 className="text-3xl mb-6">Ready for your personalized path?</h2>
                     <p className="text-secondary mb-10 text-lg max-w-2xl mx-auto">
-                        We'll optimize your {course.duration}-day schedule to focus precisely on these gaps, skipping what you already know to save you time.
+                        We&apos;ll optimize your {course.duration}-day schedule to focus precisely on these gaps, skipping what you already know to save you time.
                     </p>
 
                     <button

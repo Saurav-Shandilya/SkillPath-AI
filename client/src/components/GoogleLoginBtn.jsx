@@ -1,10 +1,8 @@
 import React from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 
 const GoogleLoginBtn = () => {
-    const navigate = useNavigate();
     const [error, setError] = React.useState('');
 
     const handleSuccess = async (response) => {
