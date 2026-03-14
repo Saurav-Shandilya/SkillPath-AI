@@ -1,5 +1,5 @@
 import express from 'express';
-import { generateDiagnosticTest, analyzeSkillGap, generateCourseStructure, enrollInCourse, updateModuleStatus } from '../controllers/courseController.js';
+import { generateDiagnosticTest, analyzeSkillGap, generateCourseStructure, enrollInCourse, updateModuleStatus, generateChapterContent } from '../controllers/courseController.js';
 import { askMentor } from '../controllers/aiController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import Course from '../models/Course.js';
@@ -10,6 +10,7 @@ router.post('/generate-test', protect, generateDiagnosticTest);
 router.post('/:id/analyze', protect, analyzeSkillGap);
 router.post('/:id/generate-structure', protect, generateCourseStructure);
 router.post('/:id/enroll', protect, enrollInCourse);
+router.post('/:id/chapter/:chapterIndex/generate-content', protect, generateChapterContent);
 router.put('/update-module', protect, updateModuleStatus);
 router.post('/ask-mentor', protect, askMentor);
 router.get('/my-courses', protect, async (req, res) => {

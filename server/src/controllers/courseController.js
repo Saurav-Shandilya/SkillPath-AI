@@ -1,4 +1,5 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
+import Anthropic from "@anthropic-ai/sdk";
 import Course from '../models/Course.js';
 import User from '../models/User.js';
 
@@ -8,6 +9,10 @@ const client = new BedrockRuntimeClient({
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     },
+});
+
+const anthropic = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY || "", // Defaults to process.env.ANTHROPIC_API_KEY
 });
 
 const parseAIResponse = (text) => {
@@ -223,6 +228,59 @@ export const updateModuleStatus = async (req, res) => {
             res.status(400).json({ message: 'Invalid module index' });
         }
     } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Generate Content for a specific Chapter/Topic
+export const generateChapterContent = async (req, res) => {
+    const courseId = req.params.id;
+    const { chapterIndex } = req.params;
+
+    try {
+        const course = await Course.findById(courseId);
+        if (!course) return res.status(404).json({ message: 'Course not found' });
+
+        const module = course.structure[chapterIndex];
+        if (!module) return res.status(400).json({ message: 'Invalid chapter index' });
+
+        // If content already exists, just return it
+        if (module.content) {
+            return res.json({ content: module.content });
+        }
+
+        const prompt = `You are a specialized technical instructor teaching ${course.courseName}. 
+        The student is at a ${course.diagnosticResults?.skillLevel || 'Beginner'} level.
+        
+        Write a comprehensive, in-depth study guide for the topic: "${module.topic}".
+        Description / Context: "${module.description}".
+        
+        Requirements:
+        1. Explain the core concepts clearly and in detail.
+        2. Provide at least 2 practical, real-world examples or analogies that make it relatable.
+        3. Include a code snippet if applicable to the topic.
+        4. Output purely in rich Markdown format with appropriate headers, bullet points, and code blocks.`;
+
+        console.log(`Generating content for chapter: ${module.topic} using Anthropic Claude...`);
+        
+        const response = await anthropic.messages.create({
+            model: "claude-3-5-sonnet-20241022",
+            max_tokens: 4096,
+            temperature: 0.7,
+            messages: [
+                { role: "user", content: prompt }
+            ]
+        });
+        
+        const generatedContent = response.content[0].text.trim();
+        
+        // Save back to course
+        course.structure[chapterIndex].content = generatedContent;
+        await course.save();
+
+        res.json({ content: generatedContent });
+    } catch (error) {
+        console.error("Error generating chapter content:", error);
         res.status(500).json({ message: error.message });
     }
 };

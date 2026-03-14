@@ -3,12 +3,15 @@ import { motion } from 'framer-motion';
 import { Calendar, Clock, BookOpen, ChevronRight, Zap, Play, CheckCircle, Loader2, ArrowLeft } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
 import Layout from '../components/Layout';
 
 const CourseView = () => {
     const { courseId } = useParams();
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [expandedChapter, setExpandedChapter] = useState(null);
+    const [generatingContent, setGeneratingContent] = useState(null); // storing the moduleIndex taking action
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -43,6 +46,44 @@ const CourseView = () => {
             setCourse(data);
         } catch (err) {
             console.error('Error updating status:', err);
+        }
+    };
+
+    const handleReadTopic = async (moduleIndex) => {
+        if (expandedChapter === moduleIndex) {
+            setExpandedChapter(null); // close if already open
+            return;
+        }
+
+        const module = course.structure[moduleIndex];
+        
+        // If content is already present (from previous generation), just expand
+        if (module.content) {
+            setExpandedChapter(moduleIndex);
+            return;
+        }
+
+        // Otherwise generate content
+        setGeneratingContent(moduleIndex);
+        try {
+            const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+            const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+            
+            const { data } = await axios.post(`${API_BASE}/courses/${courseId}/chapter/${moduleIndex}/generate-content`, {}, {
+                headers: { Authorization: `Bearer ${userInfo.token}` }
+            });
+
+            // Update course state with the new content
+            const updatedCourse = { ...course };
+            updatedCourse.structure[moduleIndex].content = data.content;
+            setCourse(updatedCourse);
+            
+            setExpandedChapter(moduleIndex);
+        } catch (err) {
+            console.error('Error generating chapter content:', err);
+            // Optionally, show a toast/notification here
+        } finally {
+            setGeneratingContent(null);
         }
     };
 
@@ -120,34 +161,52 @@ const CourseView = () => {
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-2 self-center">
+                                        <button
+                                            onClick={() => {
+                                                if(module.status === 'pending') handleStatusUpdate(i, 'in-progress');
+                                                handleReadTopic(i);
+                                            }}
+                                            disabled={generatingContent === i}
+                                            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${module.status === 'in-progress' || expandedChapter === i ? 'bg-accent1 text-white' : 'bg-accent1/10 text-accent1 border border-accent1/20 hover:bg-accent1 hover:text-white'}`}
+                                            title="Study Topic"
+                                        >
+                                            {generatingContent === i ? <Loader2 className="w-6 h-6 animate-spin" /> : <Play className="w-6 h-6 fill-current ml-1" />}
+                                        </button>
+
                                         {module.status !== 'completed' && (
-                                            <>
-                                                <button
-                                                    onClick={() => handleStatusUpdate(i, 'in-progress')}
-                                                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${module.status === 'in-progress' ? 'bg-accent1 text-white' : 'bg-accent1/10 text-accent1 border border-accent1/20 hover:bg-accent1 hover:text-white'}`}
-                                                    title="Start Module"
-                                                >
-                                                    <Play className="w-6 h-6 fill-current" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleStatusUpdate(i, 'completed')}
-                                                    className="w-12 h-12 rounded-full bg-green-500/10 text-green-500 border border-green-500/20 hover:bg-green-500 hover:text-white transition-all flex items-center justify-center"
-                                                    title="Mark as Completed"
-                                                >
-                                                    <CheckCircle className="w-6 h-6" />
-                                                </button>
-                                            </>
+                                            <button
+                                                onClick={() => handleStatusUpdate(i, 'completed')}
+                                                className="w-12 h-12 rounded-full bg-green-500/10 text-green-500 border border-green-500/20 hover:bg-green-500 hover:text-white transition-all flex items-center justify-center"
+                                                title="Mark as Completed"
+                                            >
+                                                <CheckCircle className="w-6 h-6" />
+                                            </button>
                                         )}
+
                                         {module.status === 'completed' && (
                                             <button
                                                 onClick={() => handleStatusUpdate(i, 'in-progress')}
-                                                className="text-xs text-secondary hover:text-white underline"
+                                                className="text-xs text-secondary hover:text-white underline mt-2"
                                             >
                                                 Undo
                                             </button>
                                         )}
                                     </div>
                                 </div>
+                                
+                                {/* Study Material Expansion */}
+                                {expandedChapter === i && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        className="mt-6 pt-6 border-t border-white/10"
+                                    >
+                                        <div className="prose prose-invert max-w-none text-secondary">
+                                            <ReactMarkdown>{module.content}</ReactMarkdown>
+                                        </div>
+                                    </motion.div>
+                                )}
                             </motion.div>
                         ))
                     ) : (
