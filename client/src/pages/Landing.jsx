@@ -185,8 +185,6 @@ const Landing = () => {
         { name: 'Home', href: '#' },
         { name: 'Features', href: '#features' },
         { name: 'How It Works', href: '#how-it-works' },
-        { name: 'Projects', href: '#projects' },
-        { name: 'Community', href: '#community' },
     ];
 
     // How It Works steps
