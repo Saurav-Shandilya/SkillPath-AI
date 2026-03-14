@@ -25,30 +25,38 @@ app.get('/', (req, res) => {
 
 // Proxy for Anthropic to bypass CORS without SDK
 app.post('/api/anthropic/generate', async (req, res) => {
-    const { apiKey, prompt, model } = req.body;
+    const { apiKey, prompt, system, max_tokens, model } = req.body;
+    const finalApiKey = apiKey || process.env.ANTHROPIC_API_KEY;
+
+    if (!finalApiKey) {
+        return res.status(400).json({ error: "Anthropic API Key is missing. Please provide it in the body or server .env" });
+    }
+
     try {
         const response = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-api-key': apiKey,
+                'x-api-key': finalApiKey,
                 'anthropic-version': '2023-06-01'
             },
             body: JSON.stringify({
-                // The user requested claude-sonnet-4, but it does not exist in Anthropic's API yet, so we use 3.5 sonnet latest.
-                model: 'claude-3-5-sonnet-latest', 
-                max_tokens: 4096,
+                // Default to a known stable model if not provided
+                model: model || 'claude-3-5-sonnet-20241022', 
+                max_tokens: max_tokens || 1500,
+                system: system || "You are a helpful tutor.",
                 messages: [{ role: 'user', content: prompt }]
             })
         });
         
         const data = await response.json();
         if(!response.ok) {
+            console.error("Anthropic API Error:", data);
             return res.status(response.status).json(data);
         }
         res.json({ content: data.content[0].text });
     } catch (err) {
-        console.error("Anthropic Proxy Error:", err);
+        console.error("Anthropic Proxy Exception:", err);
         res.status(500).json({ error: err.message });
     }
 });

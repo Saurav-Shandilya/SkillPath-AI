@@ -43,14 +43,14 @@ const JavaCourse = () => {
 
     setLoading(i);
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+      const res = await fetch(`${API_BASE.replace('/api', '')}/api/anthropic/generate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
+          prompt: `Write a lesson for this Java chapter: "${chapters[i].title}". Context: ${chapters[i].desc}`,
           system: "You are an expert Java instructor. Generate a clear lesson (around 300 words) covering: 1) Key Concepts  2) A short code example (plain text, no markdown)  3) Key Takeaway. Keep it beginner-friendly and practical.",
-          messages: [{ role: "user", content: `Write a lesson for this Java chapter: "${chapters[i].title}". Context: ${chapters[i].desc}` }]
+          max_tokens: 1000
         })
       });
       const data = await res.json();

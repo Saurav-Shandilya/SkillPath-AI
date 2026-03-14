@@ -38,7 +38,7 @@ const parseAIResponse = (text) => {
     }
 };
 
-const callBedrock = async (prompt) => {
+const callBedrock = async (prompt, json = true) => {
     const modelId = "meta.llama3-8b-instruct-v1:0";
 
     // Llama 3.2 prompt format
@@ -62,7 +62,8 @@ const callBedrock = async (prompt) => {
         const response = await client.send(command);
         const result = JSON.parse(new TextDecoder().decode(response.body));
         // Llama 3 on Bedrock returns the result in the 'generation' field
-        return parseAIResponse(result.generation);
+        const text = result.generation;
+        return json ? parseAIResponse(text) : text;
     } catch (error) {
         console.error("Bedrock Error:", error);
         throw error;
@@ -206,14 +207,15 @@ export const enrollInCourse = async (req, res) => {
 };
 
 export const updateModuleStatus = async (req, res) => {
-    const { courseId, moduleIndex, status } = req.body; // status: pending, in-progress, completed
+    const { courseId, moduleIndex, status, content } = req.body; // status: pending, in-progress, completed
 
     try {
         const course = await Course.findById(courseId);
         if (!course) return res.status(404).json({ message: 'Course not found' });
 
         if (course.structure[moduleIndex]) {
-            course.structure[moduleIndex].status = status;
+            if (status) course.structure[moduleIndex].status = status;
+            if (content) course.structure[moduleIndex].content = content;
 
             // Add XP if completed
             if (status === 'completed') {
@@ -259,20 +261,13 @@ export const generateChapterContent = async (req, res) => {
         1. Explain the core concepts clearly and in detail.
         2. Provide at least 2 practical, real-world examples or analogies that make it relatable.
         3. Include a code snippet if applicable to the topic.
-        4. Output purely in rich Markdown format with appropriate headers, bullet points, and code blocks.`;
+        4. Include a "Knowledge Check" section at the end with exactly 3 Multiple Choice Questions (MCQ). Provide the questions, options, and the Correct Answer for each.
+        5. Output purely in rich Markdown format with appropriate headers, bullet points, and code blocks.`;
 
-        console.log(`Generating content for chapter: ${module.topic} using Anthropic Claude...`);
+        console.log(`Generating content for chapter: ${module.topic} using Bedrock...`);
         
-        const response = await anthropic.messages.create({
-            model: "claude-3-5-sonnet-20241022",
-            max_tokens: 4096,
-            temperature: 0.7,
-            messages: [
-                { role: "user", content: prompt }
-            ]
-        });
-        
-        const generatedContent = response.content[0].text.trim();
+        // Use Bedrock with json=false to get raw Markdown
+        const generatedContent = await callBedrock(prompt, false);
         
         // Save back to course
         course.structure[chapterIndex].content = generatedContent;
@@ -280,7 +275,7 @@ export const generateChapterContent = async (req, res) => {
 
         res.json({ content: generatedContent });
     } catch (error) {
-        console.error("Error generating chapter content:", error);
+        console.error("Error generating chapter content via Bedrock:", error);
         res.status(500).json({ message: error.message });
     }
 };
