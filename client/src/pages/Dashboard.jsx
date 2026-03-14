@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { BookOpen, Trophy, Flame, Target, ChevronRight, PlayCircle, Clock, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Layout from '../components/Layout';
+import '../dashboard.css';
 
 const Dashboard = () => {
     const [courses, setCourses] = useState([]);
@@ -20,7 +18,6 @@ const Dashboard = () => {
                     return;
                 }
                 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-
                 const config = { headers: { Authorization: `Bearer ${userInfo.token}` } };
 
                 // Get complete profile with stats
@@ -50,151 +47,215 @@ const Dashboard = () => {
             }
         };
         fetchDashboardData();
-    }, []);
+    }, [navigate]);
 
-    if (loading) return <Layout><div className="h-full flex items-center justify-center text-gray-400">Loading dashboard...</div></Layout>;
+    const handleLogout = () => {
+        localStorage.removeItem('userInfo');
+        navigate('/login');
+    };
+
+    if (loading) {
+        return (
+            <div className="dashboard-root" style={{ alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ color: 'var(--dash-muted)' }}>Loading dashboard...</div>
+            </div>
+        );
+    }
+
+    const activeCourse = courses.length > 0 ? courses[0] : null;
 
     return (
-        <Layout>
-            <div className="max-w-6xl mx-auto py-6">
-                {/* Welcome Section */}
-                <div className="mb-8 md:mb-12 flex flex-col md:flex-row md:justify-between items-start md:items-end gap-6 md:gap-0">
-                    <div>
-                        <h1 className="text-3xl md:text-4xl mb-2 font-bold tracking-tight">Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">{user?.name}</span> 👋</h1>
-                        <p className="text-gray-400 text-sm md:text-base">Continue your journey where you left off.</p>
+        <div className="dashboard-root">
+            {/* SIDEBAR */}
+            <aside className="dash-sidebar">
+                <div className="dash-logo">
+                    <div className="dash-logo-icon">🚀</div>
+                    <div className="dash-logo-text">SkillPath <span>AI</span></div>
+                </div>
+                <div className="dash-nav-section">
+                    <div className="dash-nav-label">Main</div>
+                    <div className="dash-nav-item active"><span className="dash-nav-icon">⊞</span> Dashboard</div>
+                    <div className="dash-nav-item" onClick={() => navigate('/new-course')}><span className="dash-nav-icon">📚</span> New Course <span className="dash-badge-pill">New</span></div>
+                    <div className="dash-nav-item" onClick={() => navigate('/profile')}><span className="dash-nav-icon">👤</span> Profile</div>
+                </div>
+                
+                <div className="dash-sidebar-bottom">
+                    <div className="dash-user-card" onClick={() => navigate('/profile')}>
+                        <div className="dash-avatar">{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</div>
+                        <div className="dash-user-info">
+                            <div className="dash-uname">{user?.name || 'User'}</div>
+                            <div className="dash-uemail" style={{maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace:'nowrap'}}>{user?.email}</div>
+                        </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                        <div className="glass px-6 py-3 rounded-2xl flex items-center gap-3 border-orange-500/20 bg-orange-500/5 w-full sm:w-auto">
-                            <Flame className="text-orange-500 w-6 h-6 fill-orange-500 shrink-0" />
-                            <div>
-                                <p className="text-xs text-orange-400 font-bold uppercase tracking-wider">Streak</p>
-                                <p className="text-xl font-bold">{user?.streak || 0} 🔥</p>
-                            </div>
-                        </div>
-                        <div className="glass px-6 py-3 rounded-2xl flex items-center gap-3 border-yellow-500/20 bg-yellow-500/5 w-full sm:w-auto">
-                            <Trophy className="text-yellow-500 w-6 h-6 shrink-0" />
-                            <div>
-                                <p className="text-xs text-yellow-400 font-bold uppercase tracking-wider">XP Points</p>
-                                <p className="text-xl font-bold">{user?.xp || 0}</p>
-                            </div>
-                        </div>
+                    <button onClick={handleLogout} className="dash-logout-btn">⇢ &nbsp;Logout</button>
+                </div>
+            </aside>
+
+            {/* MAIN */}
+            <main className="dash-main-content">
+                {/* Mobile Header (Visible only on small screens) */}
+                <div className="dash-mobile-header" style={{ display: 'none' }}>
+                    <div className="dash-mobile-logo">
+                        🚀 SkillPath <span>AI</span>
                     </div>
                 </div>
 
-                {courses.length === 0 ? (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="glass p-16 text-center border-dashed border-white/10 rounded-[2rem]"
-                    >
-                        <div className="w-20 h-20 bg-accent1/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <BookOpen className="text-accent1 w-10 h-10" />
+                <header className="dash-topbar">
+                    <div className="dash-greeting">
+                        <h1>Welcome back, <span>{user?.name?.split(' ')[0]}</span> 👋</h1>
+                        <p>Continue your learning journey</p>
+                    </div>
+                    <div className="dash-topbar-right">
+                        <div className="dash-stat-pill">
+                            <span>🔥</span>
+                            <div><div className="dash-val">{user?.streak || 0}</div><div className="dash-lbl">Streak</div></div>
                         </div>
-                        <h2 className="text-3xl mb-4">No active courses yet</h2>
-                        <p className="text-secondary mb-10 max-w-md mx-auto">Start your personalized learning experience by generating your first path.</p>
-                        <button
-                            onClick={() => navigate('/new-course')}
-                            className="btn-primary py-4 px-10 text-lg flex items-center gap-2 mx-auto"
-                        >
-                            Start New Path <Plus className="w-5 h-5" />
-                        </button>
-                    </motion.div>
-                ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Active Course Card */}
-                        <div className="lg:col-span-2 space-y-8">
-                            <h2 className="text-2xl font-medium mb-6 flex items-center gap-3">
-                                <Target className="text-accent1" /> Active Learning Path
-                            </h2>
-                            {courses.map((course) => (
-                                <motion.div
-                                    key={course._id}
-                                    whileHover={{ y: -5 }}
-                                    className="glass-card p-6 md:p-10 overflow-hidden relative group cursor-pointer"
-                                    onClick={() => navigate(`/course/${course._id}`)}
-                                >
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-accent1/5 rounded-full blur-3xl group-hover:bg-accent1/10 transition-all"></div>
-
-                                    <div className="flex flex-col sm:flex-row justify-between items-start gap-6 sm:gap-4 mb-8">
-                                        <div>
-                                            <span className="text-cyan-400 text-xs font-bold uppercase tracking-widest bg-cyan-400/10 px-3 py-1 rounded-full border border-cyan-400/20 block w-fit mb-3">Current: {(course.structure.find(s => s.status === 'in-progress')?.chapter || course.structure.find(s => s.status === 'in-progress')?.dayRange || 'Not Started').replace('Day', 'Chapter')}</span>
-                                            <h3 className="text-2xl md:text-3xl font-bold leading-tight">{course.courseName}</h3>
-                                            <p className="text-gray-400 text-sm md:text-base mt-2">{course.targetGoal}</p>
-                                        </div>
-                                        <div className="text-left sm:text-right w-full sm:w-auto bg-white/5 sm:bg-transparent p-4 sm:p-0 rounded-xl sm:rounded-none">
-                                            <p className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">{course.progress || 0}%</p>
-                                            <p className="text-xs text-gray-400 font-medium lowercase mt-1">completed</p>
-                                        </div>
-                                    </div>
-
-                                    {/* Progress Bar */}
-                                    <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden mb-8 border border-white/10">
-                                        <motion.div
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${course.progress || 0}%` }}
-                                            className="h-full bg-gradient-to-r from-blue-500 via-cyan-400 to-purple-500 relative"
-                                        >
-                                            <div className="absolute inset-0 bg-white/20 w-full h-full animate-pulse"></div>
-                                        </motion.div>
-                                    </div>
-
-                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 sm:gap-4">
-                                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
-                                            <div className="flex items-center gap-2 text-sm text-gray-400 font-medium glass py-2 px-3 rounded-lg sm:bg-transparent sm:p-0 sm:border-0 truncate w-full sm:w-auto">
-                                                <BookOpen className="w-4 h-4 text-blue-400 shrink-0" /> {course.structure.length} Chapters
-                                            </div>
-                                            <div className="flex items-center gap-2 text-sm text-gray-400 font-medium glass py-2 px-3 rounded-lg sm:bg-transparent sm:p-0 sm:border-0 truncate w-full sm:w-auto">
-                                                <PlayCircle className="w-4 h-4 text-purple-400 shrink-0" /> <span className="truncate">Next: {course.structure[0]?.topic}</span>
-                                            </div>
-                                        </div>
-                                        <button className="flex items-center justify-center gap-2 text-accent1 font-bold group w-full sm:w-auto glass border-accent1/20 py-3 px-4 rounded-xl sm:border-0 sm:bg-transparent sm:p-0">
-                                            Continue Session <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                                        </button>
-                                    </div>
-                                </motion.div>
-                            ))}
+                        <div className="dash-stat-pill">
+                            <span>🏆</span>
+                            <div><div className="dash-val">{user?.xp || 0}</div><div className="dash-lbl">XP Points</div></div>
                         </div>
+                        <div className="dash-icon-btn">🔔<div className="dash-notif-dot"></div></div>
+                    </div>
+                </header>
 
-                        {/* Sidebar Stats */}
-                        <div className="space-y-8">
-                            <h2 className="text-2xl font-medium mb-6">Mastery Stats</h2>
-                            <div className="glass-card p-8 border-secondary/20">
-                                <div className="space-y-6">
-                                    <div className="flex flex-col gap-2">
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-gray-400">Learning Hours</span>
-                                            <span className="text-white font-bold">{user?.stats?.totalHours || 0}h</span>
-                                        </div>
-                                        <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                            <div className="h-full bg-blue-500 transition-all" style={{ width: `${Math.min((user?.stats?.totalHours || 0) / 100 * 100, 100)}%` }}></div>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-gray-400">Course Completion</span>
-                                            <span className="text-white font-bold">{user?.stats?.completedCourses || 0}/{user?.stats?.totalCourses || 0}</span>
-                                        </div>
-                                        <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                            <div className="h-full bg-purple-500 transition-all" style={{ width: `${user?.stats?.totalCourses > 0 ? (user?.stats?.completedCourses / user?.stats?.totalCourses * 100) : 0}%` }}></div>
-                                        </div>
-                                    </div>
+                <div className="dash-content-area">
+
+                    {/* HERO CARD */}
+                    {activeCourse ? (
+                        <div className="dash-hero-card">
+                            <div className="dash-hero-left">
+                                <h2>{activeCourse.courseName}</h2>
+                                <p>Next up: {(activeCourse.structure.find(s => s.status === 'in-progress')?.topic || activeCourse.structure[0]?.topic || 'Not Started')} &nbsp;·&nbsp; {activeCourse.structure.length} Chapters total</p>
+                                <div className="dash-prog-bar-bg"><div className="dash-prog-bar" style={{ width: `${activeCourse.progress || 0}%` }}></div></div>
+                                <div className="dash-prog-meta"><span>{activeCourse.progress || 0}% Completed</span><span>{activeCourse.targetGoal || 'Keep going!'}</span></div>
+                                <div className="dash-hero-actions">
+                                    <button onClick={() => navigate(`/course/${activeCourse._id}`)} className="dash-btn-primary">▶ Continue Session</button>
                                 </div>
                             </div>
-
-                            <div className="glass-card p-8 bg-gradient-to-br from-accent1/10 to-transparent border-accent1/20">
-                                <h3 className="text-xl mb-3 flex items-center gap-2">
-                                    <Trophy className="text-accent2" /> Next Milestone
-                                </h3>
-                                <p className="text-sm text-secondary mb-4">Complete more lessons to reach your next skill milestone!</p>
-                                <div className="bg-white/5 p-4 rounded-xl text-xs text-accent1 font-medium text-center border border-white/5">
-                                    Total XP: {user?.xp || 0}
+                            <div className="dash-hero-right">
+                                <div className="dash-mini-stat"><div className="dash-micon">📖</div><div className="dash-mnum">{activeCourse.structure.length}</div><div className="dash-mdesc">Chapters</div></div>
+                                <div className="dash-mini-stat"><div className="dash-micon">⏱</div><div className="dash-mnum">{activeCourse.duration}</div><div className="dash-mdesc">Days Left</div></div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="dash-hero-card" style={{justifyContent: 'center', textAlign: 'center'}}>
+                            <div className="dash-hero-left" style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                                <h2>Ready to start your journey?</h2>
+                                <p>Create a personalized AI-generated learning path today.</p>
+                                <div className="dash-hero-actions">
+                                    <button onClick={() => navigate('/new-course')} className="dash-btn-primary">📚 Start New Path</button>
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* QUICK STATS */}
+                    <div className="dash-grid-3">
+                        <div className="dash-qstat">
+                            <div className="dash-qs-icon">📈</div>
+                            <div className="dash-qs-val">{user?.stats?.totalHours || 0}h</div>
+                            <div className="dash-qs-lbl">Total Learning Hours</div>
+                            <div className="dash-qs-sub">Keep pushing forward!</div>
+                        </div>
+                        <div className="dash-qstat">
+                            <div className="dash-qs-icon">🎓</div>
+                            <div className="dash-qs-val">{user?.stats?.completedCourses || 0}/{user?.stats?.totalCourses || 0}</div>
+                            <div className="dash-qs-lbl">Course Completion</div>
+                            <div className="dash-qs-sub">{user?.stats?.totalCourses || 0} courses in progress</div>
+                        </div>
+                        <div className="dash-qstat">
+                            <div className="dash-qs-icon">⭐</div>
+                            <div className="dash-qs-val">{user?.xp || 0}</div>
+                            <div className="dash-qs-lbl">Total XP Earned</div>
+                            <div className="dash-qs-sub">Complete lessons to earn XP</div>
+                        </div>
+                    </div>
+
+                    {/* TODAY'S PLAN + CHAPTER PROGRESS */}
+                    <div className="dash-grid-2-1">
+                        {/* ALL ACTIVE COURSES (Replaces Today's Plan for accurate dynamic data) */}
+                        <div className="dash-card">
+                            <div className="dash-sec-title"><div className="dash-sec-dot"></div>My Learning Paths</div>
+                            <div className="dash-plan-items">
+                                {courses.length > 0 ? courses.map((course, idx) => (
+                                    <div key={course._id} className="dash-plan-item" onClick={() => navigate(`/course/${course._id}`)}>
+                                        <div className="dash-plan-checkbox">✓</div>
+                                        <div className="dash-plan-text">
+                                            <div className="dash-pt">{course.courseName}</div>
+                                            <div className="dash-ps">{course.progress || 0}% Completed · {course.structure.length} Chapters</div>
+                                        </div>
+                                        <div className="dash-plan-dur">View {"->"}</div>
+                                    </div>
+                                )) : (
+                                    <div style={{color: 'var(--dash-muted)', fontSize: '12px', padding: '10px'}}>No active paths found.</div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* ACTIVE COURSE STRUCTURE */}
+                        <div className="dash-card">
+                            <div className="dash-sec-title"><div className="dash-sec-dot"></div>Course Progress</div>
+                            <div className="dash-chapter-list">
+                                {activeCourse ? activeCourse.structure.slice(0, 5).map((module, idx) => (
+                                    <div key={idx} className={`dash-ch-item ${module.status === 'completed' ? 'done' : module.status === 'in-progress' ? 'active' : 'todo'}`}>
+                                        <div className="dash-ch-num">{idx + 1}</div>
+                                        <div className="dash-ch-name" style={{whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>{module.topic}</div>
+                                        <div className="dash-ch-dur">{module.status !== 'completed' ? module.estimatedTime : 'Done'}</div>
+                                    </div>
+                                )) : (
+                                    <div style={{color: 'var(--dash-muted)', fontSize: '12px', padding: '10px'}}>Start a course to see chapters.</div>
+                                )}
                             </div>
                         </div>
                     </div>
-                )}
-            </div>
-        </Layout>
+
+                    {/* BOTTOM ROW GRID */}
+                    <div className="dash-grid-3">
+                        {/* RECOMMENDED COURSES (Static examples matching mockup) */}
+                        <div className="dash-card">
+                            <div className="dash-sec-title"><div className="dash-sec-dot"></div>Recommended Skills</div>
+                            <div className="dash-rec-list">
+                                <div className="dash-rec-item" onClick={() => navigate('/new-course')}>
+                                    <div className="dash-rec-icon" style={{background: 'rgba(255,107,43,.12)'}}>☕</div>
+                                    <div className="dash-rec-info"><div className="dash-rt">Advanced Java Concepts</div><div className="dash-rs">Generics, Streams, Lambda</div></div>
+                                </div>
+                                <div className="dash-rec-item" onClick={() => navigate('/new-course')}>
+                                    <div className="dash-rec-icon" style={{background: 'rgba(79,142,247,.12)'}}>🌿</div>
+                                    <div className="dash-rec-info"><div className="dash-rt">Spring Boot Essentials</div><div className="dash-rs">REST APIs, JPA, Security</div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ACHIEVEMENTS */}
+                        <div className="dash-card">
+                            <div className="dash-sec-title"><div className="dash-sec-dot"></div>Achievements</div>
+                            <div className="dash-badge-grid">
+                                <div className={`dash-badge-item ${user?.streak >= 7 ? '' : 'locked'}`}><div className="dash-bi">🔥</div><div className="dash-bn">7-Day</div><div className="dash-bd">Streak</div></div>
+                                <div className={`dash-badge-item ${user?.xp > 500 ? '' : 'locked'}`}><div className="dash-bi">⚡</div><div className="dash-bn">Speed</div><div className="dash-bd">Learner</div></div>
+                                <div className={`dash-badge-item ${user?.xp > 1000 ? '' : 'locked'}`}><div className="dash-bi">🎯</div><div className="dash-bn">Quiz</div><div className="dash-bd">Master</div></div>
+                                <div className={`dash-badge-item ${user?.stats?.completedCourses > 0 ? '' : 'locked'}`}><div className="dash-bi">🏆</div><div className="dash-bn">First</div><div className="dash-bd">Course</div></div>
+                            </div>
+                        </div>
+
+                        {/* WEEKLY ANALYTICS */}
+                        <div className="dash-analytics-card">
+                            <div className="dash-sec-title"><div className="dash-sec-dot"></div>Weekly Activity</div>
+                            <div className="dash-week-bars">
+                                <div className="dash-wbar-wrap"><div className="dash-wbar" style={{height:'8px'}}></div><div className="dash-wday">Mon</div></div>
+                                <div className="dash-wbar-wrap"><div className="dash-wbar" style={{height:'8px'}}></div><div className="dash-wday">Tue</div></div>
+                                <div className="dash-wbar-wrap"><div className="dash-wbar" style={{height:'8px'}}></div><div className="dash-wday">Wed</div></div>
+                                <div className="dash-wbar-wrap"><div className="dash-wbar" style={{height:'8px'}}></div><div className="dash-wday">Thu</div></div>
+                                <div className="dash-wbar-wrap"><div className="dash-wbar has" style={{height:'24px'}}></div><div className="dash-wday">Fri</div></div>
+                                <div className="dash-wbar-wrap"><div className="dash-wbar" style={{height:'8px'}}></div><div className="dash-wday">Sat</div></div>
+                                <div className="dash-wbar-wrap"><div className="dash-wbar today" style={{height:'14px'}}></div><div className="dash-wday" style={{color:'var(--dash-orange)'}}>Sun</div></div>
+                            </div>
+                            <div style={{marginTop:'16px',fontSize:'12px',color:'var(--dash-muted)'}}>Keep building your streak to unlock more rewards.</div>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+        </div>
     );
 };
 
