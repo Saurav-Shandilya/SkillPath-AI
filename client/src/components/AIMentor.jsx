@@ -31,7 +31,8 @@ const AIMentor = ({ context }) => {
 
         try {
             const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-            const { data } = await axios.post('http://localhost:5000/api/courses/ask-mentor',
+            const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+            const { data } = await axios.post(`${API_BASE}/courses/ask-mentor`,
                 { question: input, context },
                 { headers: { Authorization: `Bearer ${userInfo.token}` } }
             );
