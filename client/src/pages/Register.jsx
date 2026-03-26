@@ -22,7 +22,13 @@ const Register = () => {
             navigate('/dashboard');
         } catch (err) {
             console.error('Registration failed:', err);
-            setError(err.response?.data?.message || 'Something went wrong');
+            if (err.response) {
+                setError(err.response.data?.message || 'Registration failed');
+            } else if (err.request) {
+                setError('Network error: Unable to connect to backend server');
+            } else {
+                setError('Something went wrong');
+            }
         } finally {
             setLoading(false);
         }
